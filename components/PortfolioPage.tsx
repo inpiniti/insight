@@ -37,6 +37,8 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
     ticker: "티커",
     name: "종목",
     sector: "섹터",
+    price: "현재가",
+    exchange: "거래소",
     pc: "투자자",
     sr: "비율 합",
     dcf: "DCF 저평가",
@@ -65,6 +67,8 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
     ticker: "Ticker",
     name: "Name",
     sector: "Sector",
+    price: "Price",
+    exchange: "Exchange",
     pc: "Investors",
     sr: "Σ ratio",
     dcf: "DCF discount",
@@ -112,6 +116,8 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
               }
               return typeof stock.dcf_vs_market_cap_pct === "number" ? stock.dcf_vs_market_cap_pct : 0;
             })(),
+            close: typeof stock.close === "number" ? stock.close : null,
+            exchange: stock.exchange || null,
           }));
           setData((prevData) => ({
             ...prevData,
@@ -289,6 +295,8 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
             <div className="pf-c-tk">{T.ticker}</div>
             <div className="pf-c-name">{T.name}</div>
             <div className="pf-c-sec">{T.sector}</div>
+            <div className="pf-c-num">{T.price}</div>
+            <div className="pf-c-sec">{T.exchange}</div>
             <div className="pf-c-num">{T.pc}</div>
             <div className="pf-c-num">{T.sr}</div>
             <div className="pf-c-num">{T.dcf}</div>
@@ -299,6 +307,8 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
             const safeWeight = typeof r.weight === "number" ? r.weight : 0;
             const safeSumRatio = typeof r.sum_ratio === "number" ? r.sum_ratio : 0;
             const safeDcf = typeof r.dcf_vs_market_cap_pct === "number" ? r.dcf_vs_market_cap_pct : 0;
+            const safeClose = typeof r.close === "number" ? r.close : null;
+            const safeExchange = r.exchange || "—";
             return (
               <div key={r.stock} className="pf-row">
                 <div className="pf-c-rank num">{i + 1}</div>
@@ -308,6 +318,8 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
                 </div>
                 <div className="pf-c-name">{r.name}</div>
                 <div className="pf-c-sec"><span className="sector-badge">{r.sector}</span></div>
+                <div className="pf-c-num num">{safeClose !== null ? `$${safeClose.toFixed(2)}` : "—"}</div>
+                <div className="pf-c-sec">{safeExchange}</div>
                 <div className="pf-c-num num">{r.person_count}</div>
                 <div className="pf-c-num num">{safeSumRatio.toFixed(1)}%</div>
                 <div className="pf-c-num num" style={{ color: safeDcf >= 100 ? "var(--up)" : "var(--ink-2)" }}>
