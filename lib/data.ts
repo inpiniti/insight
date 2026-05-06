@@ -11,7 +11,13 @@ export interface Stock {
   rumor: "BUY" | "SELL" | "HOLD";
   rumor_note_ko: string;
   rumor_note_en: string;
-  models: Record<string, "up" | "down" | "neutral">;
+  models: {
+    xgb: "up" | "down" | "neutral";
+    rl: "up" | "down" | "neutral";
+    times: "up" | "down" | "neutral";
+    chrono: "up" | "down" | "neutral";
+    moirai: "up" | "down" | "neutral";
+  };
   price: number;
   changePct: number;
   newsItems: number;
@@ -53,8 +59,24 @@ interface BackendImpactResponse {
   items: Stock[];
 }
 
+// 앱 데이터 구조
+export interface AppData {
+  meta: {
+    date: string;
+    totalScanned: number;
+    newsCount: number;
+    bearish: number;
+    bullish: number;
+    neutral: number;
+    index: string;
+  };
+  headlines: Array<{ ticker: string; ko: string; en: string; time: string }>;
+  models: Array<{ id: string; name?: string; desc_ko: string; desc_en: string }>;
+  stocks: Stock[];
+}
+
 // 초기 로드 시 사용할 기본 데이터
-export const APP_DATA = {
+export const APP_DATA: AppData = {
   meta: {
     date: "2026-04-30",
     totalScanned: 503,
@@ -242,6 +264,20 @@ export default APP_DATA;
  * Backend에서 특정 날짜의 S&P 500 영향도 데이터를 조회합니다.
  * 날짜가 지정되지 않으면 오늘 데이터를 조회합니다.
  */
+const normalizeSentiment = (val: any): "bearish" | "bullish" | "neutral" => {
+  const s = String(val || '').toLowerCase();
+  if (s === 'bullish') return 'bullish';
+  if (s === 'bearish') return 'bearish';
+  return 'neutral';
+};
+
+const normalizeRumor = (val: any): "BUY" | "SELL" | "HOLD" => {
+  const s = String(val || '').toUpperCase();
+  if (s === 'BUY') return 'BUY';
+  if (s === 'SELL') return 'SELL';
+  return 'HOLD';
+};
+
 export async function fetchSP500Impact(date?: string): Promise<Stock[]> {
   try {
     const dateParam = date ? `?date=${date}` : "";
@@ -255,31 +291,36 @@ export async function fetchSP500Impact(date?: string): Promise<Stock[]> {
     const data: BackendImpactResponse = await response.json();
 
     // Backend 데이터를 Stock 타입으로 변환 (필드 매핑)
-    return data.items.map((item: any) => ({
-      rank: item.rank || 0,
-      ticker: item.ticker || '',
-      name: item.name || '',
-      sector: item.sector || '',
-      sentiment: (item.sentiment || item.direction || 'neutral') as "bearish" | "bullish" | "neutral",
-      confidence: Math.round((item.confidence || 0) * 100),
-      consensus: item.consensus || '',
-      summary_ko: item.reason || item.summary_ko || '',
-      summary_en: item.reason || item.summary_en || '',
-      rumor: (item.rumors_signal || item.rumor || 'HOLD') as "BUY" | "SELL" | "HOLD",
-      rumor_note_ko: item.rumors_reason || item.rumor_note_ko || '',
-      rumor_note_en: item.rumors_reason || item.rumor_note_en || '',
-      models: item.models || {
-        xgb: item.xgb_signal ? (item.xgb_signal === 'up' ? 'up' : item.xgb_signal === 'down' ? 'down' : 'neutral') : 'neutral',
-        rl: item.rl_signal ? (item.rl_signal === 'up' ? 'up' : item.rl_signal === 'down' ? 'down' : 'neutral') : 'neutral',
-        times: item.timesfm_signal ? (item.timesfm_signal === 'up' ? 'up' : item.timesfm_signal === 'down' ? 'down' : 'neutral') : 'neutral',
-        chrono: item.chronos_signal ? (item.chronos_signal === 'up' ? 'up' : item.chronos_signal === 'down' ? 'down' : 'neutral') : 'neutral',
-        moirai: item.moirai_signal ? (item.moirai_signal === 'up' ? 'up' : item.moirai_signal === 'down' ? 'down' : 'neutral') : 'neutral',
-      },
-      price: item.price || 0,
-      changePct: item.changePct || 0,
-      newsItems: item.news_count || item.newsItems || 0,
-      spark: item.spark || sparkline(Math.random() * 100000, 40, 0),
-    })) as Stock[];
+    const stocks: Stock[] = data.items.map((item: any) => {
+      const sentiment = normalizeSentiment(item.sentiment || item.direction);
+      const rumor = normalizeRumor(item.rumors_signal || item.rumor);
+      return {
+        rank: item.rank || 0,
+        ticker: item.ticker || '',
+        name: item.name || '',
+        sector: item.sector || '',
+        sentiment,
+        confidence: Math.round((item.confidence || 0) * 100),
+        consensus: item.consensus || '',
+        summary_ko: item.reason || item.summary_ko || '',
+        summary_en: item.reason || item.summary_en || '',
+        rumor,
+        rumor_note_ko: item.rumors_reason || item.rumor_note_ko || '',
+        rumor_note_en: item.rumors_reason || item.rumor_note_en || '',
+        models: item.models || {
+          xgb: item.xgb_signal ? (item.xgb_signal === 'up' ? 'up' : item.xgb_signal === 'down' ? 'down' : 'neutral') : 'neutral',
+          rl: item.rl_signal ? (item.rl_signal === 'up' ? 'up' : item.rl_signal === 'down' ? 'down' : 'neutral') : 'neutral',
+          times: item.timesfm_signal ? (item.timesfm_signal === 'up' ? 'up' : item.timesfm_signal === 'down' ? 'down' : 'neutral') : 'neutral',
+          chrono: item.chronos_signal ? (item.chronos_signal === 'up' ? 'up' : item.chronos_signal === 'down' ? 'down' : 'neutral') : 'neutral',
+          moirai: item.moirai_signal ? (item.moirai_signal === 'up' ? 'up' : item.moirai_signal === 'down' ? 'down' : 'neutral') : 'neutral',
+        },
+        price: item.price || 0,
+        changePct: item.changePct || 0,
+        newsItems: item.news_count || item.newsItems || 0,
+        spark: item.spark || sparkline(Math.random() * 100000, 40, 0),
+      };
+    });
+    return stocks;
   } catch (error) {
     console.error("[API] sp500/impact 요청 실패:", error);
     return APP_DATA.stocks; // 실패 시 기본 데이터 반환

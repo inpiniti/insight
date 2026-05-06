@@ -86,7 +86,7 @@ export function DetailPanel({ stock, lang, t, onClose }: DetailPanelProps) {
             <h3 className="detail-block-title">{t.detail_models}</h3>
             <div className="detail-models">
               {models.map((m) => {
-                const dir = (stock.models && stock.models[m.id]) || "neutral";
+                const dir = (stock.models && stock.models[m.id as keyof typeof stock.models]) || "neutral";
                 return (
                   <div key={m.id} className="model-tile">
                     <div className="model-tile-head">

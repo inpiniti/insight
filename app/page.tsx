@@ -6,7 +6,7 @@ import { Calendar } from "@/components/Calendar";
 import { StockCard } from "@/components/StockCard";
 import { DetailPanel } from "@/components/DetailPanel";
 import { TweaksPanel, useTweaks, TweakSection, TweakRadio, TweakToggle } from "@/components/TweaksPanel";
-import APP_DATA, { Stock, fetchSP500Impact, fetchSP500Meta } from "@/lib/data";
+import APP_DATA, { Stock, AppData, fetchSP500Impact, fetchSP500Meta } from "@/lib/data";
 import { I18N } from "@/lib/i18n";
 
 interface Tweaks {
@@ -28,7 +28,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [selectedDate, setSelectedDate] = useState("2026-04-30");
   const [activeStock, setActiveStock] = useState<Stock | null>(null);
-  const [data, setData] = useState(APP_DATA);
+  const [data, setData] = useState<AppData>(APP_DATA);
   const [loading, setLoading] = useState(true);
 
   // Backend에서 데이터 로드
@@ -40,10 +40,11 @@ export default function Home() {
         fetchSP500Meta(selectedDate),
       ]);
       setData({
-        ...APP_DATA,
         meta,
+        headlines: APP_DATA.headlines,
+        models: APP_DATA.models,
         stocks,
-      });
+      } as typeof APP_DATA);
       setLoading(false);
     };
     loadData();
