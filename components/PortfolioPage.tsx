@@ -85,18 +85,33 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
         const response = await fetch("/api/portfolio");
         if (response.ok) {
           const result = await response.json();
-          // sum_ratio, avg_ratio를 number로 변환 (string으로 들어올 수 있음)
           const normalizedStocks = (result.based_on_stock || []).map((stock: any) => ({
-            ...stock,
-            sum_ratio: typeof stock.sum_ratio === "string"
-              ? parseFloat(stock.sum_ratio.replace("%", ""))
-              : stock.sum_ratio || 0,
-            avg_ratio: typeof stock.avg_ratio === "string"
-              ? parseFloat(stock.avg_ratio.replace("%", ""))
-              : stock.avg_ratio,
+            stock: stock.stock || "",
+            name: stock.name || stock.stock || "",
+            sector: stock.sector || "—",
+            logo: stock.logo || stock.stock?.charAt(0) || "",
+            person: stock.person || [],
             person_count: typeof stock.person_count === "string"
               ? parseInt(stock.person_count, 10)
               : stock.person_count || 0,
+            sum_ratio: (() => {
+              if (typeof stock.sum_ratio === "string") {
+                return parseFloat(stock.sum_ratio.replace("%", "")) || 0;
+              }
+              return typeof stock.sum_ratio === "number" ? stock.sum_ratio : 0;
+            })(),
+            avg_ratio: (() => {
+              if (typeof stock.avg_ratio === "string") {
+                return parseFloat(stock.avg_ratio.replace("%", "")) || 0;
+              }
+              return typeof stock.avg_ratio === "number" ? stock.avg_ratio : 0;
+            })(),
+            dcf_vs_market_cap_pct: (() => {
+              if (typeof stock.dcf_vs_market_cap_pct === "string") {
+                return parseFloat(stock.dcf_vs_market_cap_pct.replace("%", "")) || 0;
+              }
+              return typeof stock.dcf_vs_market_cap_pct === "number" ? stock.dcf_vs_market_cap_pct : 0;
+            })(),
           }));
           setData((prevData) => ({
             ...prevData,
@@ -106,7 +121,6 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
         }
       } catch (error) {
         console.error("Failed to load portfolio data:", error);
-        // 실패 시 기본 데이터 유지
       } finally {
         setLoading(false);
       }
@@ -225,26 +239,32 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
         </div>
 
         <div className="pf-stacked-bar">
-          {weighted.map((r, i) => (
-            <div
-              key={r.stock}
-              className="pf-stack-seg"
-              style={{ width: `${r.weight}%`, background: palette[i % palette.length] }}
-              title={`${r.stock} ${r.weight.toFixed(1)}%`}
-            >
-              {r.weight > 6 && <span>{r.stock}</span>}
-            </div>
-          ))}
+          {weighted.map((r, i) => {
+            const safeWeight = typeof r.weight === "number" ? r.weight : 0;
+            return (
+              <div
+                key={r.stock}
+                className="pf-stack-seg"
+                style={{ width: `${safeWeight}%`, background: palette[i % palette.length] }}
+                title={`${r.stock} ${safeWeight.toFixed(1)}%`}
+              >
+                {safeWeight > 6 && <span>{r.stock}</span>}
+              </div>
+            );
+          })}
         </div>
 
         <div className="pf-legend">
-          {weighted.map((r, i) => (
-            <div key={r.stock} className="pf-legend-item">
-              <span className="pf-legend-dot" style={{ background: palette[i % palette.length] }}></span>
-              <span className="pf-legend-tick num">{r.stock}</span>
-              <span className="pf-legend-pct num">{r.weight.toFixed(1)}%</span>
-            </div>
-          ))}
+          {weighted.map((r, i) => {
+            const safeWeight = typeof r.weight === "number" ? r.weight : 0;
+            return (
+              <div key={r.stock} className="pf-legend-item">
+                <span className="pf-legend-dot" style={{ background: palette[i % palette.length] }}></span>
+                <span className="pf-legend-tick num">{r.stock}</span>
+                <span className="pf-legend-pct num">{safeWeight.toFixed(1)}%</span>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -276,6 +296,9 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
           </div>
           {filteredView.length > 0 ? filteredView.map((r, i) => {
             const realIdx = weighted.findIndex(x => x.stock === r.stock);
+            const safeWeight = typeof r.weight === "number" ? r.weight : 0;
+            const safeSumRatio = typeof r.sum_ratio === "number" ? r.sum_ratio : 0;
+            const safeDcf = typeof r.dcf_vs_market_cap_pct === "number" ? r.dcf_vs_market_cap_pct : 0;
             return (
               <div key={r.stock} className="pf-row">
                 <div className="pf-c-rank num">{i + 1}</div>
@@ -286,15 +309,15 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
                 <div className="pf-c-name">{r.name}</div>
                 <div className="pf-c-sec"><span className="sector-badge">{r.sector}</span></div>
                 <div className="pf-c-num num">{r.person_count}</div>
-                <div className="pf-c-num num">{r.sum_ratio.toFixed(1)}%</div>
-                <div className="pf-c-num num" style={{ color: r.dcf_vs_market_cap_pct >= 100 ? "var(--up)" : "var(--ink-2)" }}>
-                  {r.dcf_vs_market_cap_pct.toFixed(0)}%
+                <div className="pf-c-num num">{safeSumRatio.toFixed(1)}%</div>
+                <div className="pf-c-num num" style={{ color: safeDcf >= 100 ? "var(--up)" : "var(--ink-2)" }}>
+                  {safeDcf.toFixed(0)}%
                 </div>
                 <div className="pf-c-w">
                   <div className="pf-w-bar-wrap">
-                    <div className="pf-w-bar" style={{ width: `${r.weight}%`, background: palette[realIdx % palette.length] }}></div>
+                    <div className="pf-w-bar" style={{ width: `${safeWeight}%`, background: palette[realIdx % palette.length] }}></div>
                   </div>
-                  <span className="pf-w-num num">{r.weight.toFixed(1)}%</span>
+                  <span className="pf-w-num num">{safeWeight.toFixed(1)}%</span>
                 </div>
               </div>
             );
