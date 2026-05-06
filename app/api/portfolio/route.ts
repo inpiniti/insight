@@ -45,6 +45,8 @@ export async function GET() {
           sum_ratio: item.sum_ratio || 0,
           avg_ratio: item.avg_ratio,
           dcf_vs_market_cap_pct: item.dcf_vs_market_cap_pct,
+          close: item.close || null,
+          exchange: item.exchange || null,
         })),
         meta: backendData.meta,
       };
@@ -71,6 +73,8 @@ export async function GET() {
         sum_ratio: item.sum_ratio,
         avg_ratio: item.avg_ratio,
         dcf_vs_market_cap_pct: item.dcf_vs_market_cap_pct,
+        close: item.close,
+        exchange: item.exchange,
       })),
       meta: { source: "local" },
     },
