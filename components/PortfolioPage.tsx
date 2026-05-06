@@ -13,7 +13,10 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
   const [weightBasis, setWeightBasis] = useState<"dcf" | "sum_ratio" | "person_count">("dcf");
   const [pinned, setPinned] = useState(new Set<string>());
   const [search, setSearch] = useState("");
-  const [data, setData] = useState(PORTFOLIO_DATA);
+  const [data, setData] = useState({
+    based_on_person: [],
+    based_on_stock: PORTFOLIO_DATA,
+  });
   const [loading, setLoading] = useState(true);
 
   const T = useMemo(() => lang === "ko" ? {
