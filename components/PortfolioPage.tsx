@@ -85,10 +85,23 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
         const response = await fetch("/api/portfolio");
         if (response.ok) {
           const result = await response.json();
+          // sum_ratio, avg_ratio를 number로 변환 (string으로 들어올 수 있음)
+          const normalizedStocks = (result.based_on_stock || []).map((stock: any) => ({
+            ...stock,
+            sum_ratio: typeof stock.sum_ratio === "string"
+              ? parseFloat(stock.sum_ratio.replace("%", ""))
+              : stock.sum_ratio || 0,
+            avg_ratio: typeof stock.avg_ratio === "string"
+              ? parseFloat(stock.avg_ratio.replace("%", ""))
+              : stock.avg_ratio,
+            person_count: typeof stock.person_count === "string"
+              ? parseInt(stock.person_count, 10)
+              : stock.person_count || 0,
+          }));
           setData((prevData) => ({
             ...prevData,
-            based_on_person: result.based_on_person || prevData.based_on_person,
-            based_on_stock: result.based_on_stock || prevData.based_on_stock,
+            based_on_person: result.based_on_person || [],
+            based_on_stock: normalizedStocks,
           }));
         }
       } catch (error) {
