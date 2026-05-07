@@ -5,7 +5,7 @@ import Link from "next/link";
 interface NavProps {
   lang: "ko" | "en";
   theme: "light" | "dark";
-  currentPage: "news" | "portfolio";
+  currentPage: "news" | "portfolio" | "account";
   onLangChange: (lang: "ko" | "en") => void;
   onThemeChange: (theme: "light" | "dark") => void;
 }
@@ -26,6 +26,9 @@ export function Nav({ lang, theme, currentPage, onLangChange, onThemeChange }: N
           </Link>
           <Link href="/portfolio" className={`nav-link ${currentPage === "portfolio" ? "active" : ""}`}>
             {lang === "ko" ? "포트폴리오" : "Portfolio"}
+          </Link>
+          <Link href="/account" className={`nav-link ${currentPage === "account" ? "active" : ""}`}>
+            {lang === "ko" ? "계좌" : "Account"}
           </Link>
         </div>
         <div className="nav-spacer" />
