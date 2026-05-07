@@ -74,15 +74,20 @@ export async function GET(req: NextRequest) {
       holdings,
       krw: {
         currency: "KRW",
-        balance: parseFloat(output3.evlu_amt_smtl || "0"),
         totalAsset: parseFloat(output3.tot_asst_amt || "0"),
+        purchaseAmount: parseFloat(output3.pchs_amt_smtl || "0"),
+        evaluationAmount: parseFloat(output3.evlu_amt_smtl || "0"),
+        totalDeposit: parseFloat(output3.tot_dncl_amt || "0"),
+        evaluationPnl: parseFloat(output3.evlu_pfls_amt_smtl || "0"),
+        evaluationRate: parseFloat(output3.evlu_erng_rt1 || "0"),
         availableBalance: parseFloat(output3.wdrw_psbl_tot_amt || "0"),
       },
       usd: usdRow
         ? {
             currency: "USD",
-            balance: parseFloat(usdRow.frcr_dncl_amt_2 || "0"),
+            totalDeposit: parseFloat(usdRow.frcr_dncl_amt_2 || "0"),
             availableBalance: parseFloat(usdRow.frcr_drwg_psbl_amt_1 || "0"),
+            purchaseAmount: parseFloat(usdRow.frcr_buy_amt_smtl || "0"),
           }
         : null,
       summary: output3,

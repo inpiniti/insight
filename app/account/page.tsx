@@ -378,45 +378,99 @@ export default function AccountPage() {
 
             {balanceData && (
               <>
-                <div className="balance-summary">
-                  {balanceData.krw && (
-                    <div className="balance-card">
-                      <div className="balance-card-label">{T.krwLabel}</div>
-                      <div className="balance-card-value">
-                        ₩{Number(balanceData.krw.balance).toLocaleString()}
+                <div style={{ marginBottom: "24px" }}>
+                  <h3 style={{ marginBottom: "16px", fontSize: "14px", fontWeight: "600" }}>
+                    {lang === "ko" ? "💰 자산 현황" : "💰 Asset Summary"}
+                  </h3>
+
+                  <div className="balance-summary">
+                    {balanceData.krw && (
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                        <div className="balance-card">
+                          <div className="balance-card-label">
+                            {lang === "ko" ? "🏦 실자산" : "🏦 Total Asset"}
+                          </div>
+                          <div className="balance-card-value">₩{Number(balanceData.krw.totalAsset).toLocaleString()}</div>
+                          <div className="balance-card-sub" style={{ fontSize: "11px", marginTop: "8px", lineHeight: "1.4" }}>
+                            {lang === "ko"
+                              ? `📊 평가금액: ₩${Number(balanceData.krw.evaluationAmount).toLocaleString()}\n예수금: ₩${Number(balanceData.krw.totalDeposit).toLocaleString()}`
+                              : `📊 Eval: $${Number(balanceData.krw.evaluationAmount).toLocaleString()}\nDeposit: $${Number(balanceData.krw.totalDeposit).toLocaleString()}`}
+                          </div>
+                        </div>
+
+                        <div className="balance-card">
+                          <div className="balance-card-label">
+                            {lang === "ko" ? "📈 평가손익" : "📈 P&L"}
+                          </div>
+                          <div className={`balance-card-value ${Number(balanceData.krw.evaluationPnl) >= 0 ? "" : "balance-card-loss"}`}
+                            style={{ color: Number(balanceData.krw.evaluationPnl) >= 0 ? "var(--up)" : "var(--down)" }}>
+                            {Number(balanceData.krw.evaluationPnl) >= 0 ? "+" : ""}₩{Number(balanceData.krw.evaluationPnl).toLocaleString()}
+                          </div>
+                          <div className="balance-card-sub" style={{ fontSize: "12px" }}>
+                            {lang === "ko" ? "수익률: " : "Rate: "}{Number(balanceData.krw.evaluationRate).toFixed(2)}%
+                          </div>
+                        </div>
+
+                        <div className="balance-card">
+                          <div className="balance-card-label">
+                            {lang === "ko" ? "💵 총예수금" : "💵 Total Deposit"}
+                          </div>
+                          <div className="balance-card-value">₩{Number(balanceData.krw.totalDeposit).toLocaleString()}</div>
+                          <div className="balance-card-sub">
+                            {lang === "ko" ? "사용가능: " : "Available: "}₩{Number(balanceData.krw.availableBalance).toLocaleString()}
+                          </div>
+                        </div>
+
+                        <div className="balance-card">
+                          <div className="balance-card-label">
+                            {lang === "ko" ? "🛒 평가금액" : "🛒 Evaluation"}
+                          </div>
+                          <div className="balance-card-value">₩{Number(balanceData.krw.evaluationAmount).toLocaleString()}</div>
+                          <div className="balance-card-sub">
+                            {lang === "ko" ? "매수금액: " : "Purchase: "}₩{Number(balanceData.krw.purchaseAmount).toLocaleString()}
+                          </div>
+                        </div>
                       </div>
-                      <div className="balance-card-sub">
-                        {lang === "ko" ? "사용가능:" : "Available:"} ₩{Number(balanceData.krw.availableBalance).toLocaleString()}
+                    )}
+
+                    {balanceData.usd && (
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "16px" }}>
+                        <div className="balance-card">
+                          <div className="balance-card-label">
+                            {lang === "ko" ? "💷 USD 예수금" : "💷 USD Deposit"}
+                          </div>
+                          <div className="balance-card-value">${Number(balanceData.usd.totalDeposit).toFixed(2)}</div>
+                          <div className="balance-card-sub">
+                            {lang === "ko" ? "사용가능: " : "Available: "}${Number(balanceData.usd.availableBalance).toFixed(2)}
+                          </div>
+                        </div>
+
+                        <div className="balance-card">
+                          <div className="balance-card-label">
+                            {lang === "ko" ? "📍 USD 매수금액" : "📍 USD Purchase"}
+                          </div>
+                          <div className="balance-card-value">${Number(balanceData.usd.purchaseAmount).toFixed(2)}</div>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  {balanceData.usd && (
-                    <div className="balance-card">
-                      <div className="balance-card-label">{T.usdLabel}</div>
-                      <div className="balance-card-value">
-                        ${Number(balanceData.usd.balance).toFixed(2)}
-                      </div>
-                      <div className="balance-card-sub">
-                        {lang === "ko" ? "사용가능:" : "Available:"} ${Number(balanceData.usd.availableBalance).toFixed(2)}
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {balanceData.holdings && balanceData.holdings.length > 0 && (
                   <div>
                     <h3 style={{ marginBottom: "12px", fontSize: "14px", fontWeight: "600" }}>
-                      {T.holdings}
+                      📊 {T.holdings} ({balanceData.holdings.length})
                     </h3>
                     <div className="holding-table">
                       <div className="holding-row holding-row-head">
-                        <div>{T.ticker}</div>
-                        <div>{T.name}</div>
-                        <div>{T.quantity}</div>
-                        <div>{T.avgPrice}</div>
-                        <div>{T.currentPrice}</div>
-                        <div>{T.value}</div>
-                        <div>{T.pnl}</div>
+                        <div style={{ minWidth: "60px" }}>{T.ticker}</div>
+                        <div style={{ flex: 1 }}>{T.name}</div>
+                        <div style={{ minWidth: "50px" }}>{T.quantity}</div>
+                        <div style={{ minWidth: "70px" }}>{lang === "ko" ? "매수가" : "Buy"}</div>
+                        <div style={{ minWidth: "70px" }}>{lang === "ko" ? "현재가" : "Price"}</div>
+                        <div style={{ minWidth: "70px" }}>{T.value}</div>
+                        <div style={{ minWidth: "60px" }}>{lang === "ko" ? "수익률" : "Return"}</div>
+                        <div style={{ minWidth: "100px" }}>{lang === "ko" ? "손익" : "P&L"}</div>
                       </div>
                       {balanceData.holdings.map((h: any) => {
                         const qty = parseFloat(h.ccld_qty_smtl1 || h.cblc_qty13 || 0);
@@ -427,16 +481,32 @@ export default function AccountPage() {
                         const pnlPercent = qty > 0 ? (pnlAmount / (qty * avgPrice)) * 100 : 0;
                         const isPnlPos = pnlAmount >= 0;
 
+                        // 환율 적용 (원화 변환)
+                        const baseExrt = parseFloat(h.bass_exrt || 1300);
+                        const avgPriceKrw = avgPrice * baseExrt;
+                        const currentPriceKrw = currentPrice * baseExrt;
+                        const valueKrw = value * baseExrt;
+                        const pnlAmountKrw = pnlAmount * baseExrt;
+
                         return (
                           <div key={h.pdno} className="holding-row">
                             <div className="holding-ticker">{h.pdno}</div>
-                            <div>{h.prdt_name}</div>
+                            <div style={{ fontSize: "12px", color: "var(--ink-3)" }}>{h.prdt_name}</div>
                             <div className="holding-cell">{qty.toFixed(0)}</div>
-                            <div className="holding-cell">${avgPrice.toFixed(2)}</div>
-                            <div className="holding-cell">${currentPrice.toFixed(2)}</div>
-                            <div className="holding-cell">${value.toFixed(2)}</div>
-                            <div className={`holding-cell holding-pnl ${isPnlPos ? "pos" : "neg"}`}>
-                              {isPnlPos ? "+" : ""}{pnlAmount.toFixed(2)} ({isPnlPos ? "+" : ""}{pnlPercent.toFixed(1)}%)
+                            <div className="holding-cell" title={`${avgPrice.toFixed(2)} USD`}>
+                              ${avgPrice.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(avgPriceKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
+                            </div>
+                            <div className="holding-cell" title={`${currentPrice.toFixed(2)} USD`}>
+                              ${currentPrice.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(currentPriceKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
+                            </div>
+                            <div className="holding-cell" title={`${value.toFixed(2)} USD`}>
+                              ${value.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(valueKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
+                            </div>
+                            <div className={`holding-cell ${isPnlPos ? "holding-pnl pos" : "holding-pnl neg"}`}>
+                              {isPnlPercent.toFixed(1)}%
+                            </div>
+                            <div className={`holding-cell ${isPnlPos ? "holding-pnl pos" : "holding-pnl neg"}`}>
+                              {isPnlPos ? "+" : ""}{pnlAmount.toFixed(2)}$<br/><span style={{ fontSize: "10px" }}>{isPnlPos ? "+" : ""}₩{(pnlAmountKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
                             </div>
                           </div>
                         );
