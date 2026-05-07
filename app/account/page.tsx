@@ -29,6 +29,7 @@ export default function AccountPage() {
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [balanceError, setBalanceError] = useState("");
   const [balanceData, setBalanceData] = useState<any>(null);
+  const [lastInquireTime, setLastInquireTime] = useState<number | null>(null);
   const [tokenLoading, setTokenLoading] = useState(false);
 
   const selectedAccount = accounts.find((a) => a.id === selectedId);
@@ -212,8 +213,10 @@ export default function AccountPage() {
 
       const data = await balanceRes.json();
       setBalanceData(data);
+      setLastInquireTime(Date.now());
     } catch (error) {
       setBalanceError(error instanceof Error ? error.message : "Error occurred");
+      setLastInquireTime(Date.now());
     } finally {
       setBalanceLoading(false);
     }
@@ -437,6 +440,30 @@ export default function AccountPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* Inquiry Status Row */}
+                {lastInquireTime && (
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "12px 16px",
+                    background: "var(--bg-soft)",
+                    borderRadius: "12px",
+                    marginBottom: "18px",
+                    fontSize: "12px"
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span className={`acc-token-dot ${balanceError ? "off" : "ok"}`}></span>
+                      <span style={{ fontWeight: 600, color: balanceError ? "var(--up)" : "var(--down)" }}>
+                        {balanceError
+                          ? (lang === "ko" ? "조회 실패" : "Inquiry failed")
+                          : (lang === "ko" ? "조회 완료" : "Inquired")}
+                      </span>
+                      <span style={{ color: "var(--ink-3)" }}>· {timeAgo(lastInquireTime)}</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Balance Section */}
                 {balanceData && (
