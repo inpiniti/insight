@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       CANO: accountNo,
       ACNT_PRDT_CD: accountCode,
       WCRC_FRCR_DVSN_CD: "01",
-      NATN_CD: "840",
+      NATN_CD: "000",
       TR_MKET_CD: "00",
       INQR_DVSN_CD: "00",
     });
@@ -72,18 +72,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       holdings,
-      krw: krwRow
-        ? {
-            currency: "KRW",
-            balance: parseFloat(krwRow.frcr_evlu_amt || "0"),
-            availableBalance: parseFloat(krwRow.frcr_dncl_amt_2 || "0"),
-          }
-        : null,
+      krw: {
+        currency: "KRW",
+        balance: parseFloat(output3.evlu_amt_smtl || "0"),
+        totalAsset: parseFloat(output3.tot_asst_amt || "0"),
+        availableBalance: parseFloat(output3.wdrw_psbl_tot_amt || "0"),
+      },
       usd: usdRow
         ? {
             currency: "USD",
-            balance: parseFloat(usdRow.frcr_evlu_amt || "0"),
-            availableBalance: parseFloat(usdRow.frcr_dncl_amt_2 || "0"),
+            balance: parseFloat(usdRow.frcr_dncl_amt_2 || "0"),
+            availableBalance: parseFloat(usdRow.frcr_drwg_psbl_amt_1 || "0"),
           }
         : null,
       summary: output3,

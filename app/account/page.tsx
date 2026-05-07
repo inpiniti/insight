@@ -29,6 +29,8 @@ export default function AccountPage() {
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [balanceError, setBalanceError] = useState("");
   const [balanceData, setBalanceData] = useState<any>(null);
+  const [tokenLoading, setTokenLoading] = useState(false);
+  const [tokenError, setTokenError] = useState("");
 
   const selectedAccount = accounts.find((a) => a.id === selectedId);
 
@@ -114,6 +116,40 @@ export default function AccountPage() {
 
     selectAccount(id);
     setFormInput({ name: "", appkey: "", appsecret: "", accountNo: "", showKey: false, showSecret: false });
+  };
+
+  const handleIssueToken = async () => {
+    if (!selectedAccount) {
+      setTokenError(lang === "ko" ? "계좌를 선택해주세요" : "Please select an account");
+      return;
+    }
+
+    setTokenLoading(true);
+    setTokenError("");
+
+    try {
+      const tokenRes = await fetch("/api/account/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          appkey: selectedAccount.appkey,
+          appsecret: selectedAccount.appsecret,
+        }),
+      });
+
+      if (!tokenRes.ok) {
+        const err = await tokenRes.json();
+        throw new Error(err.error || (lang === "ko" ? "토큰 발급 실패" : "Token issue failed"));
+      }
+
+      const tokenData = await tokenRes.json();
+      updateToken(selectedAccount.id, tokenData.access_token, tokenData.expiresAt);
+      setTokenError("");
+    } catch (error) {
+      setTokenError(error instanceof Error ? error.message : (lang === "ko" ? "오류 발생" : "Error occurred"));
+    } finally {
+      setTokenLoading(false);
+    }
   };
 
   const handleRefresh = async () => {
@@ -297,6 +333,25 @@ export default function AccountPage() {
         )}
 
         {accounts.length === 0 && <p style={{ padding: "40px", textAlign: "center", color: "var(--ink-3)" }}>{T.noAccounts}</p>}
+
+        {selectedAccount && (
+          <div style={{ marginBottom: "20px", display: "flex", gap: "12px" }}>
+            <button
+              className="balance-refresh-btn"
+              onClick={handleIssueToken}
+              disabled={tokenLoading}
+              style={{ border: "1px solid var(--accent)", color: "var(--accent)" }}
+            >
+              {tokenLoading ? (lang === "ko" ? "발급 중..." : "Issuing...") : (lang === "ko" ? "토큰 발급" : "Issue Token")}
+            </button>
+            {tokenError && <div style={{ color: "var(--up)", fontSize: "13px", display: "flex", alignItems: "center" }}>{tokenError}</div>}
+            {selectedAccount && !isTokenExpired(selectedAccount) && selectedAccount.token && (
+              <div style={{ color: "var(--down)", fontSize: "13px", display: "flex", alignItems: "center" }}>
+                {lang === "ko" ? "✓ 토큰 유효" : "✓ Token valid"}
+              </div>
+            )}
+          </div>
+        )}
 
         {selectedAccount ? (
           <div className="balance-section">
