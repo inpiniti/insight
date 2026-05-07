@@ -36,13 +36,13 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const activeId = localStorage.getItem("bunseok_active_account_v1");
-      if (activeId) {
-        const cache = JSON.parse(localStorage.getItem("bunseok_balance_cache_v1") || "{}");
-        const balance = cache[activeId];
-        if (balance && balance.usd && balance.usd.balance !== undefined) {
-          setTotalAssets(balance.usd.balance);
-          setTotalAssetsInput(balance.usd.balance.toString());
+      const cacheStr = localStorage.getItem("account_balance_cache");
+      if (cacheStr) {
+        const cache = JSON.parse(cacheStr);
+        const balance = cache.data;
+        if (balance && balance.usd && balance.usd.totalDeposit !== undefined) {
+          setTotalAssets(balance.usd.totalDeposit);
+          setTotalAssetsInput(balance.usd.totalDeposit.toString());
         }
       }
     } catch (e) {
