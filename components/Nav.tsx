@@ -12,8 +12,6 @@ interface NavProps {
 
 export function Nav({ lang, theme, currentPage, onLangChange, onThemeChange }: NavProps) {
   const navNewsLabel = lang === "ko" ? "뉴스 분석" : "News";
-  const navAboutLabel = lang === "ko" ? "About" : "About";
-  const navModelsLabel = lang === "ko" ? "AI 모델" : "AI Models";
 
   return (
     <nav className="nav">
@@ -29,12 +27,6 @@ export function Nav({ lang, theme, currentPage, onLangChange, onThemeChange }: N
           <Link href="/portfolio" className={`nav-link ${currentPage === "portfolio" ? "active" : ""}`}>
             {lang === "ko" ? "포트폴리오" : "Portfolio"}
           </Link>
-          <Link href="/" className="nav-link">
-            {navModelsLabel}
-          </Link>
-          <a className="nav-link" href="#about">
-            {navAboutLabel}
-          </a>
         </div>
         <div className="nav-spacer" />
         <div className="nav-actions">

@@ -2,15 +2,20 @@
 
 import { useState, useMemo, useEffect } from "react";
 import PORTFOLIO_DATA, { PortfolioStock } from "@/lib/portfolio-data";
+import { usePortfolioStore } from "@/lib/portfolio-store";
 
 interface PortfolioPageProps {
   lang: "ko" | "en";
 }
 
 export function PortfolioPage({ lang }: PortfolioPageProps) {
-  const [count, setCount] = useState(10);
-  const [sortKey, setSortKey] = useState<"person_count" | "sum_ratio" | "dcf">("person_count");
-  const [weightBasis, setWeightBasis] = useState<"dcf" | "sum_ratio" | "person_count">("dcf");
+  const count = usePortfolioStore((state) => state.count);
+  const sortKey = usePortfolioStore((state) => state.sortKey);
+  const weightBasis = usePortfolioStore((state) => state.weightBasis);
+  const setCount = usePortfolioStore((state) => state.setCount);
+  const setSortKey = usePortfolioStore((state) => state.setSortKey);
+  const setWeightBasis = usePortfolioStore((state) => state.setWeightBasis);
+
   const [pinned, setPinned] = useState(new Set<string>());
   const [search, setSearch] = useState("");
   const [data, setData] = useState({
@@ -26,9 +31,7 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
     sortLabel: "정렬 기준",
     sort_pc: "투자자 수 (person_count)",
     sort_sr: "투자 비율 합 (sum_ratio)",
-    sort_dcf: "DCF 대비 저평가",
     weightLabel: "비중 산정 기준",
-    w_dcf: "DCF 저평가율",
     w_sr: "투자 비율 합",
     w_pc: "투자자 수",
     weight_help: "선택한 종목들의 가중치를 자동 정규화하여 100%로 환산합니다.",
@@ -56,9 +59,7 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
     sortLabel: "Sort by",
     sort_pc: "Investors holding",
     sort_sr: "Sum of ratios",
-    sort_dcf: "DCF vs market cap",
     weightLabel: "Weight basis",
-    w_dcf: "DCF discount",
     w_sr: "Sum of ratios",
     w_pc: "Investors holding",
     weight_help: "Weights are normalized so the selected basket sums to 100%.",
@@ -139,11 +140,6 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
     arr.sort((a, b) => {
       if (sortKey === "person_count") return b.person_count - a.person_count;
       if (sortKey === "sum_ratio") return b.sum_ratio - a.sum_ratio;
-      if (sortKey === "dcf") {
-        const aDcf = a.dcf_vs_market_cap_pct || 0;
-        const bDcf = b.dcf_vs_market_cap_pct || 0;
-        return bDcf - aDcf;
-      }
       return 0;
     });
     return arr;
@@ -160,7 +156,6 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
 
   const weighted = useMemo(() => {
     const valOf = (r: PortfolioStock) =>
-      weightBasis === "dcf" ? r.dcf_vs_market_cap_pct :
       weightBasis === "sum_ratio" ? r.sum_ratio :
       r.person_count;
     const total = top.reduce((acc, r) => acc + valOf(r), 0) || 1;
@@ -219,7 +214,6 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
           <div className="pf-seg">
             <button className={sortKey === "person_count" ? "active" : ""} onClick={() => setSortKey("person_count")}>{T.sort_pc}</button>
             <button className={sortKey === "sum_ratio" ? "active" : ""} onClick={() => setSortKey("sum_ratio")}>{T.sort_sr}</button>
-            <button className={sortKey === "dcf" ? "active" : ""} onClick={() => setSortKey("dcf")}>{T.sort_dcf}</button>
           </div>
         </div>
 
@@ -228,7 +222,6 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
             <label className="pf-label">{T.weightLabel}</label>
           </div>
           <div className="pf-seg">
-            <button className={weightBasis === "dcf" ? "active" : ""} onClick={() => setWeightBasis("dcf")}>{T.w_dcf}</button>
             <button className={weightBasis === "sum_ratio" ? "active" : ""} onClick={() => setWeightBasis("sum_ratio")}>{T.w_sr}</button>
             <button className={weightBasis === "person_count" ? "active" : ""} onClick={() => setWeightBasis("person_count")}>{T.w_pc}</button>
           </div>
