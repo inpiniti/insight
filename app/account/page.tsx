@@ -187,8 +187,16 @@ export default function AccountPage() {
         updateToken(selectedAccount.id, token, expiresAt);
       }
 
+      const params = new URLSearchParams({
+        accountNo: selectedAccount.accountNo,
+        accountCode: selectedAccount.accountCode,
+        appkey: selectedAccount.appkey,
+        appsecret: selectedAccount.appsecret,
+        token,
+      });
+
       const balanceRes = await fetch(
-        `/api/account/balance?accountNo=${selectedAccount.accountNo}&accountCode=${selectedAccount.accountCode}&appkey=${selectedAccount.appkey}&appsecret=${selectedAccount.appsecret}&token=${token}`
+        `/api/account/balance?${params.toString()}`
       );
 
       if (!balanceRes.ok) {
