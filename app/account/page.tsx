@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Nav } from "@/components/Nav";
 import { useAccountStore, parseAccountNo, Account } from "@/lib/account-store";
@@ -8,6 +8,8 @@ import { useAccountStore, parseAccountNo, Account } from "@/lib/account-store";
 export default function AccountPage() {
   const [lang, setLang] = useState<"ko" | "en">("ko");
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [currency, setCurrency] = useState<"KRW" | "USD">("KRW");
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const accounts = useAccountStore((s) => s.accounts);
   const selectedId = useAccountStore((s) => s.selectedId);
@@ -22,80 +24,95 @@ export default function AccountPage() {
     appkey: "",
     appsecret: "",
     accountNo: "",
-    showKey: false,
-    showSecret: false,
   });
 
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [balanceError, setBalanceError] = useState("");
   const [balanceData, setBalanceData] = useState<any>(null);
   const [tokenLoading, setTokenLoading] = useState(false);
-  const [tokenError, setTokenError] = useState("");
 
   const selectedAccount = accounts.find((a) => a.id === selectedId);
 
   const T = lang === "ko"
     ? {
-        title: "계좌 관리",
+        title: "내 계좌",
+        sub: "계좌 정보를 안전하게 브라우저에 저장합니다.",
+        accountList: "계좌 목록",
+        add: "+ 계좌 추가",
         addTitle: "계좌 추가",
-        nameLabel: "별명 (선택)",
-        namePh: "예) 내 계좌 #1",
+        nameLabel: "별명",
+        namePh: "My main account",
         appkeyLabel: "App Key",
         appsecretLabel: "Secret Key",
         accountNoLabel: "계좌번호",
-        accountNoPh: "12345678-01",
-        addBtn: "계좌 추가",
-        listTitle: "등록된 계좌",
-        noAccounts: "등록된 계좌가 없습니다.",
-        empty: "계좌를 선택해주세요",
-        balanceTitle: "잔고 조회",
-        refreshBtn: "조회",
-        refreshing: "조회 중...",
-        krwLabel: "원화",
-        usdLabel: "달러",
-        holdings: "보유 종목",
-        ticker: "티커",
-        name: "종목명",
-        quantity: "보유수량",
-        avgPrice: "평균단가",
-        currentPrice: "현재가",
-        value: "평가금액",
-        pnl: "손익",
-        tokenValid: "유효",
-        tokenExpired: "만료",
-        tokenNone: "미발급",
+        accountNoPh: "50012345-01",
+        cancel: "취소",
+        save: "저장",
+        noAccounts: "등록된 계좌가 없습니다. 계좌를 추가해 주세요.",
+        empty_select: "왼쪽에서 계좌를 선택하면 잔고와 보유 종목을 조회할 수 있습니다.",
+        tokenValid: "토큰 유효",
+        tokenExpired: "토큰 만료",
+        issue: "토큰 발급",
+        refresh: "재발급",
+        inquire: "계좌 조회",
+        issuing: "발급 중…",
+        inquiring: "조회 중…",
+        issued: "발급됨",
         delete: "삭제",
+        confirmDelete: "정말 삭제하시겠습니까?",
+        total: "총자산",
+        cash: "총예수금",
+        pnl: "평가손익",
+        evalAmt: "평가금액",
+        holdings: "보유 종목",
+        h_ticker: "종목",
+        h_qty: "수량",
+        h_avg: "평균단가",
+        h_cur: "현재가",
+        h_chg: "변동률",
+        h_eval: "평가금액",
+        fxNote: "환율: 1 USD = ₩",
+        selected: "선택됨",
       }
     : {
-        title: "Account Management",
+        title: "My Accounts",
+        sub: "Account info is stored in your browser only.",
+        accountList: "Accounts",
+        add: "+ Add account",
         addTitle: "Add Account",
-        nameLabel: "Nickname (optional)",
-        namePh: "e.g. My Account #1",
+        nameLabel: "Nickname",
+        namePh: "My main account",
         appkeyLabel: "App Key",
         appsecretLabel: "Secret Key",
-        accountNoLabel: "Account Number",
-        accountNoPh: "12345678-01",
-        addBtn: "Add Account",
-        listTitle: "Registered Accounts",
-        noAccounts: "No accounts registered.",
-        empty: "Please select an account",
-        balanceTitle: "Balance",
-        refreshBtn: "Refresh",
-        refreshing: "Loading...",
-        krwLabel: "KRW",
-        usdLabel: "USD",
-        holdings: "Holdings",
-        ticker: "Ticker",
-        name: "Name",
-        quantity: "Quantity",
-        avgPrice: "Avg Price",
-        currentPrice: "Price",
-        value: "Value",
-        pnl: "P&L",
-        tokenValid: "Valid",
-        tokenExpired: "Expired",
-        tokenNone: "Not issued",
+        accountNoLabel: "Account No.",
+        accountNoPh: "50012345-01",
+        cancel: "Cancel",
+        save: "Save",
+        noAccounts: "No accounts yet. Add one to get started.",
+        empty_select: "Select an account on the left to view balance and holdings.",
+        tokenValid: "Token valid",
+        tokenExpired: "Token expired",
+        issue: "Issue token",
+        refresh: "Refresh",
+        inquire: "Inquire",
+        issuing: "Issuing…",
+        inquiring: "Loading…",
+        issued: "issued",
         delete: "Delete",
+        confirmDelete: "Are you sure?",
+        total: "Total assets",
+        cash: "Cash",
+        pnl: "Unrealized P&L",
+        evalAmt: "Evaluation",
+        holdings: "Holdings",
+        h_ticker: "Ticker",
+        h_qty: "Qty",
+        h_avg: "Avg cost",
+        h_cur: "Current",
+        h_chg: "Change",
+        h_eval: "Eval",
+        fxNote: "FX: 1 USD = ₩",
+        selected: "Selected",
       };
 
   const handleAddAccount = (e: React.FormEvent) => {
@@ -115,18 +132,14 @@ export default function AccountPage() {
     });
 
     selectAccount(id);
-    setFormInput({ name: "", appkey: "", appsecret: "", accountNo: "", showKey: false, showSecret: false });
+    setFormInput({ name: "", appkey: "", appsecret: "", accountNo: "" });
+    setShowAddForm(false);
   };
 
   const handleIssueToken = async () => {
-    if (!selectedAccount) {
-      setTokenError(lang === "ko" ? "계좌를 선택해주세요" : "Please select an account");
-      return;
-    }
+    if (!selectedAccount) return;
 
     setTokenLoading(true);
-    setTokenError("");
-
     try {
       const tokenRes = await fetch("/api/account/token", {
         method: "POST",
@@ -139,24 +152,20 @@ export default function AccountPage() {
 
       if (!tokenRes.ok) {
         const err = await tokenRes.json();
-        throw new Error(err.error || (lang === "ko" ? "토큰 발급 실패" : "Token issue failed"));
+        throw new Error(err.error || "Token issue failed");
       }
 
       const tokenData = await tokenRes.json();
       updateToken(selectedAccount.id, tokenData.access_token, tokenData.expiresAt);
-      setTokenError("");
     } catch (error) {
-      setTokenError(error instanceof Error ? error.message : (lang === "ko" ? "오류 발생" : "Error occurred"));
+      console.error("Token issue error:", error);
     } finally {
       setTokenLoading(false);
     }
   };
 
-  const handleRefresh = async () => {
-    if (!selectedAccount) {
-      setBalanceError(lang === "ko" ? "계좌를 선택해주세요" : "Please select an account");
-      return;
-    }
+  const handleInquire = async () => {
+    if (!selectedAccount) return;
 
     setBalanceLoading(true);
     setBalanceError("");
@@ -177,8 +186,7 @@ export default function AccountPage() {
         });
 
         if (!tokenRes.ok) {
-          const err = await tokenRes.json();
-          throw new Error(err.error || "토큰 발급 실패");
+          throw new Error("Token issue failed");
         }
 
         const tokenData = await tokenRes.json();
@@ -195,22 +203,46 @@ export default function AccountPage() {
         token,
       });
 
-      const balanceRes = await fetch(
-        `/api/account/balance?${params.toString()}`
-      );
+      const balanceRes = await fetch(`/api/account/balance?${params.toString()}`);
 
       if (!balanceRes.ok) {
         const err = await balanceRes.json();
-        throw new Error(err.error || "잔고 조회 실패");
+        throw new Error(err.error || "Balance inquiry failed");
       }
 
       const data = await balanceRes.json();
       setBalanceData(data);
     } catch (error) {
-      setBalanceError(error instanceof Error ? error.message : "오류 발생");
+      setBalanceError(error instanceof Error ? error.message : "Error occurred");
     } finally {
       setBalanceLoading(false);
     }
+  };
+
+  const timeAgo = (ts?: number) => {
+    if (!ts) return "";
+    const m = Math.floor((Date.now() - ts) / 60000);
+    if (m < 1) return lang === "ko" ? "방금" : "just now";
+    if (m < 60) return lang === "ko" ? `${m}분 전` : `${m}m ago`;
+    const h = Math.floor(m / 60);
+    return lang === "ko" ? `${h}시간 전` : `${h}h ago`;
+  };
+
+  const fmt = (krwValue: number) => {
+    if (!balanceData?.krw) return "—";
+    if (currency === "USD") {
+      const fx = 1380; // default
+      return "$" + (krwValue / fx).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    return "₩" + Math.round(krwValue).toLocaleString();
+  };
+
+  const fmtPrice = (usdValue: number) => {
+    if (currency === "USD") {
+      return "$" + usdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    const krwValue = usdValue * 1380;
+    return "₩" + Math.round(krwValue).toLocaleString();
   };
 
   return (
@@ -218,277 +250,274 @@ export default function AccountPage() {
       <Nav lang={lang} theme={theme} currentPage="account" onLangChange={setLang} onThemeChange={setTheme} />
 
       <div className="container">
-        <section className="hero" style={{ paddingTop: 56, paddingBottom: 16 }}>
-          <div className="hero-eyebrow">{lang === "ko" ? "포트폴리오 관리" : "Portfolio Management"}</div>
+        <section className="hero" style={{ paddingTop: 56, paddingBottom: 28 }}>
+          <div className="hero-eyebrow">{lang === "ko" ? "계좌 관리" : "Account"}</div>
           <h1 className="hero-title">{T.title}</h1>
+          <p className="hero-sub">{T.sub}</p>
         </section>
 
-        <div className="acc-grid">
+        <section className="acc-grid">
           {/* LEFT PANEL: Account List + Add Form */}
           <div className="acc-list-wrap">
-            {/* Account List */}
-            {accounts.length > 0 && (
-              <div>
-                {accounts.map((account) => {
-                  const isSelected = account.id === selectedId;
-                  const tokenStatus = !account.token
-                    ? "none"
-                    : isTokenExpired(account)
-                      ? "expired"
-                      : "valid";
-                  const tokenLabel =
-                    tokenStatus === "none"
-                      ? T.tokenNone
-                      : tokenStatus === "expired"
-                        ? T.tokenExpired
-                        : `${T.tokenValid} · ${new Date(account.tokenExpiresAt!).toLocaleTimeString(lang === "ko" ? "ko-KR" : "en-US", { hour: "2-digit", minute: "2-digit" })}`;
+            <div className="acc-list-head">
+              <div className="pf-section-title">
+                {T.accountList} <span className="num" style={{ color: "var(--ink-4)" }}>{accounts.length}</span>
+              </div>
+              <button className="chip active" onClick={() => setShowAddForm(true)}>
+                {T.add}
+              </button>
+            </div>
 
-                  return (
-                    <div
-                      key={account.id}
-                      className={`acc-item ${isSelected ? "selected" : ""}`}
-                      onClick={() => selectAccount(account.id)}
-                    >
-                      <input
-                        type="radio"
-                        className="acc-radio"
-                        checked={isSelected}
-                        readOnly
-                      />
-                      <div className="acc-item-content">
-                        <div className="acc-item-name">
-                          {account.name || account.accountNo}
-                        </div>
-                        <div className="acc-item-no">{account.accountNo}</div>
-                        <div className={`acc-token-badge ${tokenStatus}`}>{tokenLabel}</div>
-                      </div>
+            {accounts.length === 0 && !showAddForm && (
+              <div className="acc-empty">{T.noAccounts}</div>
+            )}
+
+            <div className="acc-list">
+              {accounts.map((account) => {
+                const isSelected = account.id === selectedId;
+                const tokenStatus = !account.token
+                  ? "expired"
+                  : isTokenExpired(account)
+                    ? "expired"
+                    : "valid";
+
+                return (
+                  <div
+                    key={account.id}
+                    className={`acc-item ${isSelected ? "active" : ""}`}
+                    onClick={() => selectAccount(account.id)}
+                  >
+                    <div className="acc-item-head">
+                      <span className="acc-name">{account.name || account.accountNo}</span>
+                      {isSelected && <span className="acc-active-pill">{T.selected}</span>}
+                    </div>
+                    <div className="acc-no num">{account.accountNo}</div>
+                    <div className="acc-meta">
+                      <span className={`acc-token-dot ${tokenStatus === "valid" ? "ok" : "off"}`}></span>
+                      <span style={{ fontSize: 11.5, color: "var(--ink-3)" }}>
+                        {tokenStatus === "valid" ? T.tokenValid : T.tokenExpired}
+                        {tokenStatus === "valid" && account.tokenExpiresAt && ` · ${timeAgo(account.tokenExpiresAt)}`}
+                      </span>
                       <button
-                        type="button"
-                        className="acc-delete-btn"
+                        className="acc-del"
                         onClick={(e) => {
                           e.stopPropagation();
-                          removeAccount(account.id);
+                          if (confirm(T.confirmDelete)) removeAccount(account.id);
                         }}
+                        aria-label="delete"
                       >
-                        ✕
+                        <svg width="13" height="13" viewBox="0 0 13 13" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round">
+                          <path d="M3 4 H10 M5 4 V2.5 H8 V4 M4 4 L4.5 11 H8.5 L9 4"/>
+                        </svg>
                       </button>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                  </div>
+                );
+              })}
+            </div>
 
-            {accounts.length === 0 && (
-              <p style={{ padding: "20px", textAlign: "center", color: "var(--ink-3)", fontSize: "13px" }}>
-                {T.noAccounts}
-              </p>
-            )}
-
-            {/* Add Account Form */}
-            <form onSubmit={handleAddAccount} className="acc-form">
-              <div className="acc-form-field">
-                <label className="acc-form-label">{T.nameLabel}</label>
-                <input
-                  type="text"
-                  placeholder={T.namePh}
-                  value={formInput.name}
-                  onChange={(e) => setFormInput({ ...formInput, name: e.target.value })}
-                  className="acc-form-input"
-                />
-              </div>
-              <div className="acc-form-field">
-                <label className="acc-form-label">{T.appkeyLabel}</label>
-                <div className="acc-form-input-wrap">
+            {showAddForm && (
+              <form onSubmit={handleAddAccount} className="acc-form">
+                <div className="acc-form-head">{T.addTitle}</div>
+                <label className="acc-field">
+                  <span>{T.nameLabel}</span>
                   <input
-                    type={formInput.showKey ? "text" : "password"}
-                    placeholder={T.appkeyLabel}
+                    value={formInput.name}
+                    onChange={(e) => setFormInput({ ...formInput, name: e.target.value })}
+                    placeholder={T.namePh}
+                  />
+                </label>
+                <label className="acc-field">
+                  <span>{T.appkeyLabel}</span>
+                  <input
                     value={formInput.appkey}
                     onChange={(e) => setFormInput({ ...formInput, appkey: e.target.value })}
-                    className="acc-form-input"
+                    placeholder="P********"
                   />
-                  <button
-                    type="button"
-                    className="acc-form-eye-btn"
-                    onClick={() => setFormInput({ ...formInput, showKey: !formInput.showKey })}
-                  >
-                    {formInput.showKey ? "👁" : "🙈"}
-                  </button>
-                </div>
-              </div>
-              <div className="acc-form-field">
-                <label className="acc-form-label">{T.appsecretLabel}</label>
-                <div className="acc-form-input-wrap">
+                </label>
+                <label className="acc-field">
+                  <span>{T.appsecretLabel}</span>
                   <input
-                    type={formInput.showSecret ? "text" : "password"}
-                    placeholder={T.appsecretLabel}
+                    type="password"
                     value={formInput.appsecret}
                     onChange={(e) => setFormInput({ ...formInput, appsecret: e.target.value })}
-                    className="acc-form-input"
+                    placeholder="••••••••"
                   />
+                </label>
+                <label className="acc-field">
+                  <span>{T.accountNoLabel}</span>
+                  <input
+                    value={formInput.accountNo}
+                    onChange={(e) => setFormInput({ ...formInput, accountNo: e.target.value })}
+                    placeholder={T.accountNoPh}
+                  />
+                </label>
+                <div className="acc-form-actions">
                   <button
                     type="button"
-                    className="acc-form-eye-btn"
-                    onClick={() => setFormInput({ ...formInput, showSecret: !formInput.showSecret })}
+                    className="chip"
+                    onClick={() => {
+                      setShowAddForm(false);
+                      setFormInput({ name: "", appkey: "", appsecret: "", accountNo: "" });
+                    }}
                   >
-                    {formInput.showSecret ? "👁" : "🙈"}
+                    {T.cancel}
+                  </button>
+                  <button type="submit" className="chip active">
+                    {T.save}
                   </button>
                 </div>
-              </div>
-              <div className="acc-form-field">
-                <label className="acc-form-label">{T.accountNoLabel}</label>
-                <input
-                  type="text"
-                  placeholder={T.accountNoPh}
-                  value={formInput.accountNo}
-                  onChange={(e) => setFormInput({ ...formInput, accountNo: e.target.value })}
-                  className="acc-form-input"
-                />
-              </div>
-              <button type="submit" className="acc-form-submit">
-                {T.addBtn}
-              </button>
-            </form>
+              </form>
+            )}
           </div>
 
-          {/* RIGHT PANEL: Account Details & Balance */}
-          {selectedAccount ? (
-            <div className="acc-detail">
-              {/* Detail Head */}
-              <div className="acc-detail-head">
-                <h2 className="acc-detail-title">
-                  {selectedAccount.name || selectedAccount.accountNo}
-                </h2>
-                <div className="acc-detail-info">
-                  {lang === "ko" ? "계좌번호: " : "Account: "}{selectedAccount.accountNo}
+          {/* RIGHT PANEL: Account Details */}
+          <div className="acc-detail">
+            {!selectedAccount ? (
+              <div className="acc-detail-empty">
+                <div className="acc-detail-empty-icon">
+                  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <rect x="4" y="9" width="24" height="16" rx="2"/>
+                    <path d="M4 14 H28 M9 20 H14"/>
+                  </svg>
                 </div>
+                <p>{T.empty_select}</p>
               </div>
-
-              {/* Token Management Row */}
-              <div className="acc-token-row">
-                <button
-                  className="acc-token-btn"
-                  onClick={handleIssueToken}
-                  disabled={tokenLoading}
-                >
-                  {tokenLoading ? (lang === "ko" ? "발급 중..." : "Issuing...") : (lang === "ko" ? "토큰 발급" : "Issue Token")}
-                </button>
-                <div className="acc-token-status">
-                  {tokenError ? (
-                    <div style={{ color: "var(--up)", fontSize: "12px" }}>{tokenError}</div>
-                  ) : selectedAccount && !isTokenExpired(selectedAccount) && selectedAccount.token ? (
-                    <div style={{ color: "var(--down)", fontSize: "12px" }}>
-                      ✓ {lang === "ko" ? "토큰 유효" : "Token valid"}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              {/* Balance Section */}
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                  <h3 style={{ fontSize: "14px", fontWeight: "600" }}>{T.balanceTitle}</h3>
-                  <button
-                    className="acc-balance-btn"
-                    onClick={handleRefresh}
-                    disabled={balanceLoading}
-                  >
-                    {balanceLoading ? T.refreshing : T.refreshBtn}
-                  </button>
-                </div>
-
-                {balanceError && (
-                  <div style={{ color: "var(--up)", fontSize: "12px", marginBottom: "12px" }}>
-                    {balanceError}
+            ) : (
+              <>
+                {/* Detail Head with Currency Toggle */}
+                <div className="acc-detail-head">
+                  <div>
+                    <div className="acc-detail-name">{selectedAccount.name || selectedAccount.accountNo}</div>
+                    <div className="acc-detail-no num">{selectedAccount.accountNo}</div>
                   </div>
-                )}
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <div className="lang-toggle">
+                      <button
+                        className={currency === "KRW" ? "active" : ""}
+                        onClick={() => setCurrency("KRW")}
+                      >
+                        ₩ KRW
+                      </button>
+                      <button
+                        className={currency === "USD" ? "active" : ""}
+                        onClick={() => setCurrency("USD")}
+                      >
+                        $ USD
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
+                {/* Token Row */}
+                <div className="acc-token-row">
+                  <div className="acc-token-info">
+                    <span className={`acc-token-dot ${selectedAccount.token && !isTokenExpired(selectedAccount) ? "ok" : "off"}`}></span>
+                    <span style={{ fontWeight: 600, fontSize: 13 }}>
+                      {selectedAccount.token && !isTokenExpired(selectedAccount) ? T.tokenValid : T.tokenExpired}
+                    </span>
+                    {selectedAccount.token && !isTokenExpired(selectedAccount) && selectedAccount.tokenExpiresAt && (
+                      <span style={{ fontSize: 12, color: "var(--ink-3)" }}>· {T.issued} {timeAgo(selectedAccount.tokenExpiresAt)}</span>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      className="chip"
+                      onClick={handleIssueToken}
+                      disabled={tokenLoading}
+                    >
+                      {tokenLoading ? T.issuing : (selectedAccount.token && !isTokenExpired(selectedAccount) ? T.refresh : T.issue)}
+                    </button>
+                    <button
+                      className="chip active"
+                      onClick={handleInquire}
+                      disabled={!selectedAccount.token || isTokenExpired(selectedAccount) || balanceLoading}
+                    >
+                      {balanceLoading ? T.inquiring : T.inquire}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Balance Section */}
                 {balanceData && (
                   <>
-                    {/* Balance Grid */}
                     <div className="acc-balance-grid">
                       {balanceData.krw && (
                         <>
                           <div className="acc-balance-cell">
-                            <div className="acc-balance-label">
-                              {lang === "ko" ? "실자산" : "Total Asset"}
-                            </div>
-                            <div className="acc-balance-value">₩{Number(balanceData.krw.totalAsset).toLocaleString()}</div>
+                            <div className="strip-label">{T.total}</div>
+                            <div className="strip-value">{fmt(balanceData.krw.totalAsset)}</div>
                           </div>
                           <div className="acc-balance-cell">
-                            <div className="acc-balance-label">
-                              {lang === "ko" ? "총예수금" : "Total Deposit"}
+                            <div className="strip-label">{T.pnl}</div>
+                            <div className={`strip-value ${Number(balanceData.krw.evaluationPnl) >= 0 ? "strip-tone-up" : "strip-tone-down"}`}>
+                              {Number(balanceData.krw.evaluationPnl) >= 0 ? "+" : ""}{fmt(balanceData.krw.evaluationPnl)}
                             </div>
-                            <div className="acc-balance-value">₩{Number(balanceData.krw.totalDeposit).toLocaleString()}</div>
                           </div>
                           <div className="acc-balance-cell">
-                            <div className="acc-balance-label">
-                              {lang === "ko" ? "평가금액" : "Evaluation"}
-                            </div>
-                            <div className="acc-balance-value">₩{Number(balanceData.krw.evaluationAmount).toLocaleString()}</div>
+                            <div className="strip-label">{T.cash}</div>
+                            <div className="strip-value">{fmt(balanceData.krw.totalDeposit)}</div>
                           </div>
                           <div className="acc-balance-cell">
-                            <div className="acc-balance-label">
-                              {lang === "ko" ? "평가손익" : "P&L"}
-                            </div>
-                            <div className="acc-balance-value" style={{ color: Number(balanceData.krw.evaluationPnl) >= 0 ? "var(--up)" : "var(--down)" }}>
-                              {Number(balanceData.krw.evaluationPnl) >= 0 ? "+" : ""}₩{Number(balanceData.krw.evaluationPnl).toLocaleString()}
-                            </div>
+                            <div className="strip-label">{T.evalAmt}</div>
+                            <div className="strip-value">{fmt(balanceData.krw.evaluationAmount)}</div>
                           </div>
                         </>
                       )}
                     </div>
+                    <div style={{ fontSize: 12, color: "var(--ink-4)", textAlign: "right", marginBottom: 16 }}>
+                      {T.fxNote}1380
+                    </div>
 
-                    {/* Holdings */}
+                    {/* Holdings Table */}
                     {balanceData.holdings && balanceData.holdings.length > 0 && (
                       <div className="acc-holdings">
-                        <h3 style={{ marginBottom: "12px", fontSize: "14px", fontWeight: "600" }}>
-                          📊 {T.holdings} ({balanceData.holdings.length})
-                        </h3>
-                        <div className="holding-table">
-                          <div className="holding-row holding-row-head">
-                            <div style={{ minWidth: "60px" }}>{T.ticker}</div>
-                            <div style={{ flex: 1 }}>{T.name}</div>
-                            <div style={{ minWidth: "50px" }}>{T.quantity}</div>
-                            <div style={{ minWidth: "70px" }}>{lang === "ko" ? "매수가" : "Buy"}</div>
-                            <div style={{ minWidth: "70px" }}>{lang === "ko" ? "현재가" : "Price"}</div>
-                            <div style={{ minWidth: "70px" }}>{T.value}</div>
-                            <div style={{ minWidth: "60px" }}>{lang === "ko" ? "수익률" : "Return"}</div>
-                            <div style={{ minWidth: "100px" }}>{lang === "ko" ? "손익" : "P&L"}</div>
+                        <div className="pf-section-title" style={{ marginBottom: 12 }}>
+                          {T.holdings} <span className="num" style={{ color: "var(--ink-4)" }}>{balanceData.holdings.length}</span>
+                        </div>
+                        <div className="pf-table">
+                          <div className="pf-row pf-row-head" style={{ gridTemplateColumns: "1fr 70px 110px 110px 90px 130px" }}>
+                            <div>{T.h_ticker}</div>
+                            <div style={{ textAlign: "right" }}>{T.h_qty}</div>
+                            <div style={{ textAlign: "right" }}>{T.h_avg}</div>
+                            <div style={{ textAlign: "right" }}>{T.h_cur}</div>
+                            <div style={{ textAlign: "right" }}>{T.h_chg}</div>
+                            <div style={{ textAlign: "right" }}>{T.h_eval}</div>
                           </div>
                           {balanceData.holdings.map((h: any) => {
                             const qty = parseFloat(h.ccld_qty_smtl1 || h.cblc_qty13 || 0);
                             const avgPrice = parseFloat(h.avg_unpr3 || 0);
                             const currentPrice = parseFloat(h.ovrs_now_pric1 || 0);
-                            const value = qty * currentPrice;
-                            const pnlAmount = value - qty * avgPrice;
-                            const pnlPercent = qty > 0 ? (pnlAmount / (qty * avgPrice)) * 100 : 0;
-                            const isPnlPos = pnlAmount >= 0;
-
-                            const baseExrt = parseFloat(h.bass_exrt || 1300);
-                            const avgPriceKrw = avgPrice * baseExrt;
-                            const currentPriceKrw = currentPrice * baseExrt;
-                            const valueKrw = value * baseExrt;
-                            const pnlAmountKrw = pnlAmount * baseExrt;
+                            const chg = qty > 0 ? ((currentPrice - avgPrice) / avgPrice) * 100 : 0;
+                            const evalUsd = qty * currentPrice;
 
                             return (
-                              <div key={h.pdno} className="holding-row">
-                                <div className="holding-ticker">{h.pdno}</div>
-                                <div style={{ fontSize: "12px", color: "var(--ink-3)" }}>{h.prdt_name}</div>
-                                <div className="holding-cell">{qty.toFixed(0)}</div>
-                                <div className="holding-cell" title={`${avgPrice.toFixed(2)} USD`}>
-                                  ${avgPrice.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(avgPriceKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
+                              <div key={h.pdno} className="pf-row" style={{ gridTemplateColumns: "1fr 70px 110px 110px 90px 130px" }}>
+                                <div className="pf-c-tk">
+                                  <span className="pf-logo" style={{ background: "var(--accent)" }}>
+                                    {h.pdno.slice(0, 2)}
+                                  </span>
+                                  <div>
+                                    <div style={{ fontWeight: 700 }}>{h.pdno}</div>
+                                    <div style={{ fontSize: 11.5, color: "var(--ink-3)", fontWeight: 400 }}>
+                                      {h.prdt_name}
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="holding-cell" title={`${currentPrice.toFixed(2)} USD`}>
-                                  ${currentPrice.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(currentPriceKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
+                                <div className="num" style={{ textAlign: "right" }}>{qty.toFixed(0)}</div>
+                                <div className="num" style={{ textAlign: "right" }}>{fmtPrice(avgPrice)}</div>
+                                <div className="num" style={{ textAlign: "right" }}>{fmtPrice(currentPrice)}</div>
+                                <div
+                                  className="num"
+                                  style={{ textAlign: "right", color: chg >= 0 ? "var(--up)" : "var(--down)", fontWeight: 600 }}
+                                >
+                                  {chg >= 0 ? "+" : ""}{chg.toFixed(2)}%
                                 </div>
-                                <div className="holding-cell" title={`${value.toFixed(2)} USD`}>
-                                  ${value.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(valueKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
-                                </div>
-                                <div className={`holding-cell ${isPnlPos ? "holding-pnl pos" : "holding-pnl neg"}`}>
-                                  {pnlPercent.toFixed(1)}%
-                                </div>
-                                <div className={`holding-cell ${isPnlPos ? "holding-pnl pos" : "holding-pnl neg"}`}>
-                                  {isPnlPos ? "+" : ""}{pnlAmount.toFixed(2)}$<br/><span style={{ fontSize: "10px" }}>{isPnlPos ? "+" : ""}₩{(pnlAmountKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
+                                <div className="num" style={{ textAlign: "right", fontWeight: 600 }}>
+                                  {currency === "USD"
+                                    ? "$" + evalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                    : "₩" + Math.round(evalUsd * 1380).toLocaleString()
+                                  }
                                 </div>
                               </div>
                             );
@@ -496,30 +525,29 @@ export default function AccountPage() {
                         </div>
                       </div>
                     )}
-
-                    {!balanceData.holdings || balanceData.holdings.length === 0 && (
-                      <p style={{ paddingTop: "20px", textAlign: "center", color: "var(--ink-3)", fontSize: "12px" }}>
-                        {lang === "ko" ? "보유 종목이 없습니다" : "No holdings"}
-                      </p>
-                    )}
                   </>
                 )}
 
-                {!balanceData && !balanceError && (
-                  <p style={{ paddingTop: "20px", textAlign: "center", color: "var(--ink-3)", fontSize: "12px" }}>
-                    {T.refreshBtn} {lang === "ko" ? "버튼을 눌러 잔고를 조회하세요." : "to view balance"}
-                  </p>
+                {!balanceData && !balanceLoading && !balanceError && (
+                  <div className="acc-detail-empty" style={{ padding: 40 }}>
+                    <p style={{ fontSize: 14 }}>
+                      {selectedAccount.token && !isTokenExpired(selectedAccount)
+                        ? (lang === "ko" ? "「계좌 조회」 버튼을 눌러 잔고를 가져오세요." : "Press Inquire to fetch balance.")
+                        : (lang === "ko" ? "토큰을 먼저 발급해 주세요." : "Issue a token first.")
+                      }
+                    </p>
+                  </div>
                 )}
-              </div>
-            </div>
-          ) : (
-            <div className="acc-detail" style={{ opacity: 0.5, pointerEvents: "none" }}>
-              <p style={{ textAlign: "center", color: "var(--ink-3)", fontSize: "13px", paddingTop: "40px" }}>
-                {T.empty}
-              </p>
-            </div>
-          )}
-        </div>
+
+                {balanceError && (
+                  <div style={{ color: "var(--up)", fontSize: 12, padding: 20, textAlign: "center" }}>
+                    {balanceError}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -1025,6 +1025,45 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
   margin-top: 24px;
 }
 
+.holding-table {
+  display: flex; flex-direction: column; gap: 0;
+  border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-elev);
+}
+.holding-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 50px 70px 70px 70px 60px 100px;
+  gap: 0; align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.holding-row:last-child { border-bottom: none; }
+.holding-row-head {
+  background: var(--bg-soft);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  padding: 14px 16px;
+}
+.holding-ticker {
+  font-weight: 600; color: var(--ink);
+}
+.holding-cell {
+  color: var(--ink-2);
+  text-align: right;
+  line-height: 1.4;
+}
+.holding-cell:first-of-type { text-align: left; }
+.holding-pnl {
+  font-weight: 600;
+}
+.holding-pnl.pos { color: var(--up); }
+.holding-pnl.neg { color: var(--down); }
+
 @media (max-width: 1000px) {
   .acc-grid { grid-template-columns: 1fr; }
   .acc-balance-grid { grid-template-columns: repeat(2, 1fr); }
