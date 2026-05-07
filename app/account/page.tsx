@@ -32,6 +32,53 @@ export default function AccountPage() {
   const [lastInquireTime, setLastInquireTime] = useState<number | null>(null);
   const [tokenLoading, setTokenLoading] = useState(false);
 
+  // Load balance data from localStorage when selectedId changes
+  useEffect(() => {
+    if (typeof window === "undefined" || !selectedId) return;
+
+    try {
+      const cached = localStorage.getItem("account_balance_cache");
+      if (cached) {
+        const { accountId, data, time } = JSON.parse(cached);
+        if (accountId === selectedId) {
+          // Load cached balance for this account
+          setBalanceData(data);
+          setLastInquireTime(time);
+        } else {
+          // Different account, clear balance
+          setBalanceData(null);
+          setLastInquireTime(null);
+          setBalanceError("");
+        }
+      } else {
+        // No cache, clear balance
+        setBalanceData(null);
+        setLastInquireTime(null);
+        setBalanceError("");
+      }
+    } catch (e) {
+      console.error("Failed to load balance cache:", e);
+    }
+  }, [selectedId]);
+
+  // Save balance data to localStorage when it changes
+  useEffect(() => {
+    if (balanceData && selectedId) {
+      try {
+        localStorage.setItem(
+          "account_balance_cache",
+          JSON.stringify({
+            accountId: selectedId,
+            data: balanceData,
+            time: lastInquireTime,
+          })
+        );
+      } catch (e) {
+        console.error("Failed to save balance cache:", e);
+      }
+    }
+  }, [balanceData, lastInquireTime, selectedId]);
+
   const selectedAccount = accounts.find((a) => a.id === selectedId);
 
   const T = lang === "ko"
