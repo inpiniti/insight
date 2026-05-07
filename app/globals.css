@@ -848,42 +848,12 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
   border-radius: 12px; cursor: pointer;
   transition: all 0.15s;
   background: var(--bg);
-  display: flex; align-items: center; gap: 12px;
 }
 .acc-item:hover { border-color: var(--border-strong); }
-.acc-item.selected {
+.acc-item.active {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
-.acc-radio {
-  appearance: none; width: 16px; height: 16px;
-  border: 2px solid var(--border); border-radius: 50%;
-  cursor: pointer; flex-shrink: 0;
-  transition: all 0.15s;
-}
-.acc-radio:checked {
-  border-color: var(--accent); background: var(--accent);
-  box-shadow: inset 0 0 0 4px var(--bg-elev);
-}
-.acc-item-content {
-  flex: 1; min-width: 0;
-}
-.acc-item-name { font-weight: 600; font-size: 13px; color: var(--ink); }
-.acc-item-no { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
-.acc-token-badge {
-  font-size: 10px; padding: 2px 8px; border-radius: 6px;
-  background: var(--bg-soft); color: var(--ink-3);
-  margin-top: 6px; display: inline-block;
-}
-.acc-token-badge.valid { background: rgba(16,185,129,0.15); color: #10b981; }
-.acc-token-badge.expired { background: rgba(239,68,68,0.15); color: var(--up); }
-.acc-token-badge.none { background: var(--bg-soft); color: var(--ink-3); }
-.acc-delete-btn {
-  padding: 4px; color: var(--ink-4); border: none;
-  background: none; cursor: pointer; border-radius: 6px;
-  transition: all 0.15s; flex-shrink: 0;
-}
-.acc-delete-btn:hover { color: var(--up); background: var(--up-soft); }
 .acc-item-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
 .acc-name { font-weight: 700; font-size: 14px; }
 .acc-active-pill {
@@ -900,7 +870,7 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 .acc-token-dot.off { background: var(--ink-4); }
 .acc-del {
   margin-left: auto; padding: 4px; color: var(--ink-4);
-  border-radius: 6px; border: none; background: none; cursor: pointer;
+  border-radius: 6px;
 }
 .acc-del:hover { color: var(--up); background: var(--up-soft); }
 
@@ -1005,7 +975,7 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 .acc-balance-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .acc-balance-grid {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
 }
 .acc-balance-cell {
   background: var(--bg-soft); border-radius: 12px;

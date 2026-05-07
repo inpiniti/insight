@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Nav } from "@/components/Nav";
 import { PortfolioPage } from "@/components/PortfolioPage";
+import GlobalTickerPanel from "@/components/GlobalTickerPanel";
 import { TweaksPanel, useTweaks, TweakSection, TweakRadio } from "@/components/TweaksPanel";
 
 interface Tweaks {
@@ -23,6 +24,7 @@ export default function PortfolioPageWrapper() {
 
   return (
     <div data-theme={tweaks.theme} data-cardstyle={tweaks.cardStyle} data-density={tweaks.density} style={{ "--accent": tweaks.accent } as any}>
+      <GlobalTickerPanel lang={lang} />
       <Nav
         lang={lang}
         theme={tweaks.theme}

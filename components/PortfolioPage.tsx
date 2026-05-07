@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import PORTFOLIO_DATA, { PortfolioStock } from "@/lib/portfolio-data";
 import { usePortfolioStore } from "@/lib/portfolio-store";
+import tickerStore from "@/lib/ticker-store";
 
 interface PortfolioPageProps {
   lang: "ko" | "en";
@@ -303,7 +304,21 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
             const safeClose = typeof r.close === "number" ? r.close : null;
             const safeExchange = r.exchange || "—";
             return (
-              <div key={r.stock} className="pf-row">
+              <div
+                key={r.stock}
+                className="pf-row pf-row-clickable"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  tickerStore.open({
+                    ticker: r.stock,
+                    name: r.name,
+                    price: safeClose,
+                    changePct: 0,
+                    sector: r.sector,
+                    source: "portfolio",
+                  });
+                }}
+              >
                 <div className="pf-c-rank num">{i + 1}</div>
                 <div className="pf-c-tk num">
                   <span className="pf-logo" style={{ background: palette[realIdx % palette.length] }}>{r.logo}</span>

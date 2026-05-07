@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Nav } from "@/components/Nav";
 import { useAccountStore, parseAccountNo, Account } from "@/lib/account-store";
+import tickerStore from "@/lib/ticker-store";
+import GlobalTickerPanel from "@/components/GlobalTickerPanel";
 
 export default function AccountPage() {
   const [lang, setLang] = useState<"ko" | "en">("ko");
@@ -297,6 +299,7 @@ export default function AccountPage() {
 
   return (
     <div data-theme={theme}>
+      <GlobalTickerPanel lang={lang} />
       <Nav lang={lang} theme={theme} currentPage="account" onLangChange={setLang} onThemeChange={setTheme} />
 
       <div className="container">
@@ -566,7 +569,20 @@ export default function AccountPage() {
                             const evalUsd = qty * currentPrice;
 
                             return (
-                              <div key={h.pdno} className="pf-row" style={{ gridTemplateColumns: "1fr 70px 110px 110px 90px 130px" }}>
+                              <div
+                                key={h.pdno}
+                                className="pf-row pf-row-clickable"
+                                style={{ gridTemplateColumns: "1fr 70px 110px 110px 90px 130px", cursor: "pointer" }}
+                                onClick={() => {
+                                  tickerStore.open({
+                                    ticker: h.pdno,
+                                    name: h.prdt_name,
+                                    price: currentPrice,
+                                    changePct: chg,
+                                    source: "account",
+                                  });
+                                }}
+                              >
                                 <div className="pf-c-tk">
                                   <span className="pf-logo" style={{ background: "var(--accent)" }}>
                                     {h.pdno.slice(0, 2)}
