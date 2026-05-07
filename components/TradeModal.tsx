@@ -239,7 +239,7 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
                 <input
                   type="number"
                   min="1"
-                  max={mode === "sell" ? maxQty : undefined}
+                  max={mode === "sell" && maxQty != null ? maxQty : undefined}
                   value={qty}
                   onChange={(e) => {
                     let v = parseInt(e.target.value) || 1;
