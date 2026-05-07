@@ -769,7 +769,7 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 .pf-table { display: flex; flex-direction: column; }
 .pf-row {
   display: grid;
-  grid-template-columns: 36px 110px 1fr 130px 80px 90px 110px 200px;
+  grid-template-columns: 36px 110px 1fr 130px 80px 90px 110px 110px 80px 180px 70px;
   gap: 14px;
   align-items: center;
   padding: 12px 4px;

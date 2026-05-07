@@ -24,10 +24,30 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
     based_on_stock: PORTFOLIO_DATA,
   });
   const [loading, setLoading] = useState(true);
+  const [totalAssets, setTotalAssets] = useState<number>(0);
+  const [totalAssetsInput, setTotalAssetsInput] = useState<string>("");
 
   // Expose PORTFOLIO_DATA to window for GlobalTickerPanel lookup
   useEffect(() => {
     (window as any).PORTFOLIO_DATA = PORTFOLIO_DATA;
+  }, []);
+
+  // Load total assets from account balance on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const activeId = localStorage.getItem("bunseok_active_account_v1");
+      if (activeId) {
+        const cache = JSON.parse(localStorage.getItem("bunseok_balance_cache_v1") || "{}");
+        const balance = cache[activeId];
+        if (balance && balance.usd && balance.usd.balance !== undefined) {
+          setTotalAssets(balance.usd.balance);
+          setTotalAssetsInput(balance.usd.balance.toString());
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load account balance:", e);
+    }
   }, []);
 
   const T = useMemo(() => lang === "ko" ? {
@@ -195,6 +215,64 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
         <p className="hero-sub">{T.sub}</p>
       </section>
 
+      {/* Total Assets Input Section */}
+      <section style={{ marginBottom: 20 }}>
+        <div style={{
+          background: "var(--bg-elev)",
+          border: "1px solid var(--border)",
+          borderRadius: "var(--radius-lg)",
+          padding: "18px 20px",
+          display: "flex",
+          gap: 12,
+          alignItems: "center"
+        }}>
+          <div style={{ flex: 1 }}>
+            <label style={{
+              fontSize: 12,
+              color: "var(--ink-3)",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              display: "block",
+              marginBottom: 8
+            }}>
+              {lang === "ko" ? "총자산 (USD)" : "Total Assets (USD)"}
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={totalAssetsInput}
+              onChange={(e) => {
+                setTotalAssetsInput(e.target.value);
+                const val = parseFloat(e.target.value) || 0;
+                setTotalAssets(val);
+              }}
+              placeholder={lang === "ko" ? "달러로 입력" : "Enter in USD"}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: "1px solid var(--border)",
+                borderRadius: "10px",
+                background: "var(--bg)",
+                color: "var(--ink)",
+                fontSize: "14px",
+                fontFamily: "inherit"
+              }}
+            />
+          </div>
+          <div style={{
+            fontSize: 13,
+            color: "var(--ink-2)",
+            fontWeight: 500,
+            minWidth: "100px",
+            textAlign: "right"
+          }}>
+            {totalAssets > 0 ? `$${totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "-"}
+          </div>
+        </div>
+      </section>
+
       <section className="pf-controls">
         <div className="pf-control">
           <div className="pf-control-head">
@@ -300,6 +378,7 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
             <div className="pf-c-num">{T.sr}</div>
             <div className="pf-c-num">{T.dcf}</div>
             <div className="pf-c-w">{T.weight}</div>
+            <div className="pf-c-num" style={{ minWidth: 70 }}>{lang === "ko" ? "제안갯수" : "Qty"}</div>
           </div>
           {filteredView.length > 0 ? filteredView.map((r, i) => {
             const realIdx = weighted.findIndex(x => x.stock === r.stock);
@@ -308,6 +387,10 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
             const safeDcf = typeof r.dcf_vs_market_cap_pct === "number" ? r.dcf_vs_market_cap_pct : 0;
             const safeClose = typeof r.close === "number" ? r.close : null;
             const safeExchange = r.exchange || "—";
+
+            // Calculate suggested quantity
+            const suggestedQty = totalAssets > 0 && safeClose ?
+              (totalAssets * safeWeight / 100) / safeClose : 0;
             return (
               <div
                 key={r.stock}
@@ -343,6 +426,9 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
                     <div className="pf-w-bar" style={{ width: `${safeWeight}%`, background: palette[realIdx % palette.length] }}></div>
                   </div>
                   <span className="pf-w-num num">{safeWeight.toFixed(1)}%</span>
+                </div>
+                <div className="pf-c-num num" style={{ minWidth: 70 }}>
+                  {totalAssets > 0 ? suggestedQty.toFixed(2) : "0"}
                 </div>
               </div>
             );
