@@ -39,16 +39,24 @@ export default function Home() {
         fetchSP500Impact(selectedDate),
         fetchSP500Meta(selectedDate),
       ]);
-      setData({
+      const newData = {
         meta,
         headlines: APP_DATA.headlines,
         models: APP_DATA.models,
         stocks,
-      } as typeof APP_DATA);
+      } as typeof APP_DATA;
+      setData(newData);
+      // Expose to window for GlobalTickerPanel lookup
+      (window as any).APP_DATA = newData;
       setLoading(false);
     };
     loadData();
   }, [selectedDate]);
+
+  // Ensure APP_DATA is always available to window
+  useEffect(() => {
+    (window as any).APP_DATA = data;
+  }, [data]);
 
   const t = I18N[lang];
 

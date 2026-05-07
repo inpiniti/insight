@@ -25,6 +25,11 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
   });
   const [loading, setLoading] = useState(true);
 
+  // Expose PORTFOLIO_DATA to window for GlobalTickerPanel lookup
+  useEffect(() => {
+    (window as any).PORTFOLIO_DATA = PORTFOLIO_DATA;
+  }, []);
+
   const T = useMemo(() => lang === "ko" ? {
     title: "현명한 투자자 포트폴리오",
     sub: "유명 투자자 80명의 보유 데이터를 종합해 비중 가이드를 제안합니다. 매수 추천이 아닌 시각화 도구입니다.",

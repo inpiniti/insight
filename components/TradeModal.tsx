@@ -1,25 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { TickerPayload } from "@/lib/ticker-store";
+
+interface TickerInfo {
+  ticker: string;
+  name: string;
+  price: number;
+  changePct: number;
+}
 
 interface TradeModalProps {
   mode: "buy" | "sell";
-  ticker: TickerPayload;
+  info: TickerInfo;
   lang: "ko" | "en";
   onClose: () => void;
   onSubmit: () => void;
 }
 
-export default function TradeModal({ mode, ticker, lang, onClose, onSubmit }: TradeModalProps) {
+const fmtUsd = (v: number) =>
+  "$" + v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtPct2 = (n: number) => (n >= 0 ? "+" : "") + n.toFixed(2) + "%";
+
+export default function TradeModal({ mode, info, lang, onClose, onSubmit }: TradeModalProps) {
   const [priceMode, setPriceMode] = useState("market");
-  const [price, setPrice] = useState(ticker.price || 0);
+  const [price, setPrice] = useState(info.price);
   const [qty, setQty] = useState(1);
   const [submitted, setSubmitted] = useState(false);
 
-  const refOpen = +(((ticker.price || 0) * 0.992).toFixed(2));
-  const refHigh = +(((ticker.price || 0) * 1.013).toFixed(2));
-  const refLow = +(((ticker.price || 0) * 0.978).toFixed(2));
+  const refOpen = +(info.price * 0.992).toFixed(2);
+  const refHigh = +(info.price * 1.013).toFixed(2);
+  const refLow = +(info.price * 0.978).toFixed(2);
 
   const T = lang === "ko" ? {
     buyTitle: "매수 주문",
@@ -33,12 +43,15 @@ export default function TradeModal({ mode, ticker, lang, onClose, onSubmit }: Tr
     p_low: "저가",
     p_manual: "직접입력",
     qtyLabel: "수량",
+    maxQty: (n: number) => `보유 ${n}주`,
     totalLabel: "주문 총액",
     cancel: "취소",
     confirmBuy: "매수 주문",
     confirmSell: "매도 주문",
     notice: "이 화면은 데모입니다. 실제 주문은 발생하지 않습니다.",
     success: "주문이 접수되었습니다",
+    successSub: (m: string, t: string, q: number, p: number) =>
+      `${m} · ${t} · ${q}주 @ ${fmtUsd(p)}`,
     close: "닫기",
   } : {
     buyTitle: "Buy order",
@@ -52,232 +65,222 @@ export default function TradeModal({ mode, ticker, lang, onClose, onSubmit }: Tr
     p_low: "Low",
     p_manual: "Manual",
     qtyLabel: "Qty",
+    maxQty: (n: number) => `holding ${n}`,
     totalLabel: "Order total",
     cancel: "Cancel",
     confirmBuy: "Buy",
     confirmSell: "Sell",
     notice: "Demo only. No real order is placed.",
     success: "Order accepted",
+    successSub: (m: string, t: string, q: number, p: number) =>
+      `${m} · ${t} · ${q} @ ${fmtUsd(p)}`,
     close: "Close",
   };
 
   const setPriceFor = (pm: string) => {
     setPriceMode(pm);
-    if (pm === "market") setPrice(ticker.price || 0);
+    if (pm === "market") setPrice(info.price);
     else if (pm === "open") setPrice(refOpen);
     else if (pm === "high") setPrice(refHigh);
     else if (pm === "low") setPrice(refLow);
   };
 
   const total = price * qty;
+  const maxQty = null; // holding?.qty would go here
 
   const handleSubmit = () => {
     setSubmitted(true);
-    setTimeout(() => {
-      onSubmit();
-    }, 2000);
+    setTimeout(() => onSubmit(), 1400);
   };
 
   return (
     <div className="trade-overlay" onClick={onClose}>
-      <div className="trade-modal" onClick={(e) => e.stopPropagation()}>
+      <div className={`trade-modal trade-${mode}`} onClick={(e) => e.stopPropagation()}>
         <div className="trade-modal-head">
-          <span className={`trade-mode-pill trade-${mode}-pill`}>
-            {mode === "buy" ? "🔴" : "🔵"} {mode === "buy" ? T.buyTitle : T.sellTitle}
-          </span>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20 }}>
-            ✕
+          <div className={`trade-mode-pill trade-${mode}-pill`}>
+            {mode === "buy" ? "▲" : "▼"} {mode === "buy" ? T.buyTitle : T.sellTitle}
+          </div>
+          <button className="detail-close" onClick={onClose}>
+            <svg width="14" height="14" viewBox="0 0 14 14">
+              <path
+                d="M3 3 L11 11 M11 3 L3 11"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
         </div>
 
-        {!submitted ? (
-          <div className="trade-modal-body">
-            {/* Ticker target */}
-            <div className="trade-target">
-              <div style={{ fontSize: 11, color: "var(--ink-3)", fontWeight: 600, textTransform: "uppercase" }}>
-                {T.ticker}
-              </div>
-              <div style={{ fontWeight: 700, fontSize: 16 }}>{ticker.ticker}</div>
-              <div style={{ fontSize: 13, color: "var(--ink-3)" }}>{ticker.name || ticker.ticker}</div>
+        {submitted ? (
+          <div className="trade-success">
+            <div className={`trade-success-icon ${mode}`}>
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 32 32"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M8 17 L13 22 L24 11" />
+              </svg>
             </div>
-
-            {/* Price selection */}
-            <div className="trade-field">
-              <label className="trade-field-label">{T.priceLabel}</label>
-              <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                {(["market", "open", "high", "low"] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => setPriceFor(mode)}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: 8,
-                      border: priceMode === mode ? "1px solid var(--accent)" : "1px solid var(--border)",
-                      background: priceMode === mode ? "var(--accent)" : "var(--bg-soft)",
-                      color: priceMode === mode ? "white" : "var(--ink-2)",
-                      cursor: "pointer",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    {T[`p_${mode}` as keyof typeof T]}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setPriceMode("manual")}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    border: priceMode === "manual" ? "1px solid var(--accent)" : "1px solid var(--border)",
-                    background: priceMode === "manual" ? "var(--accent)" : "var(--bg-soft)",
-                    color: priceMode === "manual" ? "white" : "var(--ink-2)",
-                    cursor: "pointer",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    transition: "all 0.15s",
-                  }}
-                >
-                  {T.p_manual}
-                </button>
-              </div>
-
-              {priceMode === "manual" ? (
-                <input
-                  type="number"
-                  value={price}
-                  onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-                  style={{
-                    padding: "10px 12px",
-                    border: "1px solid var(--border)",
-                    borderRadius: 8,
-                    background: "var(--bg-elev)",
-                    color: "var(--ink)",
-                    fontSize: 14,
-                  }}
-                />
-              ) : (
-                <div className="trade-field-value">
-                  ${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
+            <div className="trade-success-msg">{T.success}</div>
+            <div className="trade-success-sub">
+              {T.successSub(
+                mode === "buy" ? T.confirmBuy : T.confirmSell,
+                info.ticker,
+                qty,
+                price
               )}
             </div>
+            <button className="chip" onClick={onClose} style={{ marginTop: 16 }}>
+              {T.close}
+            </button>
+          </div>
+        ) : (
+          <div className="trade-modal-body">
+            {/* Market/Ticker/Price info */}
+            <div className="trade-target">
+              <div>
+                <div className="trade-field-label">{T.market}</div>
+                <div className="trade-field-value">NASDAQ · USD</div>
+              </div>
+              <div>
+                <div className="trade-field-label">{T.ticker}</div>
+                <div className="trade-field-value">
+                  <span className="num" style={{ fontWeight: 700 }}>
+                    {info.ticker}
+                  </span>
+                  <span style={{ fontSize: 13, color: "var(--ink-3)", marginLeft: 8, fontWeight: 400 }}>
+                    {info.name}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div className="trade-field-label">{lang === "ko" ? "현재가" : "Last"}</div>
+                <div className="trade-field-value num">
+                  {fmtUsd(info.price)}
+                  <span
+                    className={`detail-pct ${info.changePct >= 0 ? "up" : "down"}`}
+                    style={{ fontSize: 12, marginLeft: 4 }}
+                  >
+                    {fmtPct2(info.changePct)}
+                  </span>
+                </div>
+              </div>
+            </div>
 
-            {/* Quantity */}
+            {/* Price input */}
             <div className="trade-field">
-              <label className="trade-field-label">{T.qtyLabel}</label>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <label className="trade-field-label">{T.priceLabel}</label>
+              <div className="trade-price-segs">
                 <button
-                  onClick={() => setQty(Math.max(1, qty - 1))}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    border: "1px solid var(--border)",
-                    background: "var(--bg-soft)",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                    fontSize: 18,
-                  }}
+                  className={priceMode === "market" ? "active" : ""}
+                  onClick={() => setPriceFor("market")}
                 >
+                  {T.p_market}
+                  <span className="num">{fmtUsd(info.price)}</span>
+                </button>
+                <button
+                  className={priceMode === "open" ? "active" : ""}
+                  onClick={() => setPriceFor("open")}
+                >
+                  {T.p_open}
+                  <span className="num">{fmtUsd(refOpen)}</span>
+                </button>
+                <button
+                  className={priceMode === "high" ? "active" : ""}
+                  onClick={() => setPriceFor("high")}
+                >
+                  {T.p_high}
+                  <span className="num">{fmtUsd(refHigh)}</span>
+                </button>
+                <button
+                  className={priceMode === "low" ? "active" : ""}
+                  onClick={() => setPriceFor("low")}
+                >
+                  {T.p_low}
+                  <span className="num">{fmtUsd(refLow)}</span>
+                </button>
+              </div>
+              <div className="trade-price-input-row">
+                <input
+                  type="number"
+                  step="0.01"
+                  value={price}
+                  onChange={(e) => {
+                    setPrice(parseFloat(e.target.value) || 0);
+                    setPriceMode("manual");
+                  }}
+                  className="trade-input num"
+                />
+                <span className="trade-input-unit">USD</span>
+              </div>
+            </div>
+
+            {/* Qty input */}
+            <div className="trade-field">
+              <label className="trade-field-label">
+                {T.qtyLabel}
+                {mode === "sell" && maxQty != null && (
+                  <span style={{ marginLeft: 8, color: "var(--ink-3)", fontWeight: 400 }}>
+                    · {T.maxQty(maxQty)}
+                  </span>
+                )}
+              </label>
+              <div className="trade-qty-row">
+                <button className="qty-step" onClick={() => setQty(Math.max(1, qty - 1))}>
                   −
                 </button>
                 <input
                   type="number"
+                  min="1"
+                  max={mode === "sell" ? maxQty : undefined}
                   value={qty}
-                  onChange={(e) => setQty(Math.max(1, parseInt(e.target.value) || 1))}
-                  style={{
-                    flex: 1,
-                    padding: "10px 12px",
-                    border: "1px solid var(--border)",
-                    borderRadius: 8,
-                    background: "var(--bg-elev)",
-                    color: "var(--ink)",
-                    fontSize: 14,
-                    textAlign: "center",
+                  onChange={(e) => {
+                    let v = parseInt(e.target.value) || 1;
+                    if (mode === "sell" && maxQty != null) v = Math.min(v, maxQty);
+                    setQty(Math.max(1, v));
                   }}
+                  className="trade-input num"
                 />
                 <button
-                  onClick={() => setQty(qty + 1)}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    border: "1px solid var(--border)",
-                    background: "var(--bg-soft)",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                    fontSize: 18,
+                  className="qty-step"
+                  onClick={() => {
+                    const next = qty + 1;
+                    if (mode === "sell" && maxQty != null && next > maxQty) return;
+                    setQty(next);
                   }}
                 >
                   +
                 </button>
+                {mode === "sell" && maxQty != null && (
+                  <button className="qty-max" onClick={() => setQty(maxQty)}>
+                    MAX
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Order total */}
-            <div
-              style={{
-                padding: "12px 14px",
-                background: "var(--bg-soft)",
-                borderRadius: 10,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <span style={{ fontSize: 12, color: "var(--ink-3)", fontWeight: 600 }}>{T.totalLabel}</span>
-              <span style={{ fontSize: 18, fontWeight: 700 }}>
-                ${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
+            {/* Total */}
+            <div className="trade-total">
+              <span className="trade-field-label">{T.totalLabel}</span>
+              <span className={`trade-total-amt ${mode}`}>{fmtUsd(total)}</span>
             </div>
 
-            {/* Notice */}
-            <div style={{ fontSize: 12, color: "var(--ink-3)", padding: 12, textAlign: "center" }}>
-              {T.notice}
-            </div>
+            <div className="trade-notice">{T.notice}</div>
 
-            {/* Buttons */}
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                onClick={onClose}
-                style={{
-                  flex: 1,
-                  padding: "12px 16px",
-                  border: "1px solid var(--border)",
-                  background: "var(--bg-soft)",
-                  color: "var(--ink)",
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  fontWeight: 600,
-                  fontSize: 14,
-                }}
-              >
+            <div className="trade-actions-row">
+              <button className="chip" onClick={onClose}>
                 {T.cancel}
               </button>
-              <button
-                onClick={handleSubmit}
-                style={{
-                  flex: 1,
-                  padding: "12px 16px",
-                  background: mode === "buy" ? "var(--up)" : "var(--down)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  fontWeight: 600,
-                  fontSize: 14,
-                }}
-              >
+              <button className={`trade-confirm ${mode}`} onClick={handleSubmit}>
                 {mode === "buy" ? T.confirmBuy : T.confirmSell}
               </button>
-            </div>
-          </div>
-        ) : (
-          <div style={{ padding: 40, textAlign: "center" }}>
-            <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>✓</div>
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{T.success}</div>
-            <div style={{ fontSize: 13, color: "var(--ink-3)" }}>
-              {mode === "buy" ? T.confirmBuy : T.confirmSell} · {ticker.ticker} · {qty} @ $
-              {price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
         )}

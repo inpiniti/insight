@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Nav } from "@/components/Nav";
 import { useAccountStore, parseAccountNo, Account } from "@/lib/account-store";
+import PORTFOLIO_DATA from "@/lib/portfolio-data";
 import tickerStore from "@/lib/ticker-store";
 import GlobalTickerPanel from "@/components/GlobalTickerPanel";
 
@@ -12,6 +13,11 @@ export default function AccountPage() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [currency, setCurrency] = useState<"KRW" | "USD">("KRW");
   const [showAddForm, setShowAddForm] = useState(false);
+
+  // Expose PORTFOLIO_DATA to window for GlobalTickerPanel lookup
+  useEffect(() => {
+    (window as any).PORTFOLIO_DATA = PORTFOLIO_DATA;
+  }, []);
 
   const accounts = useAccountStore((s) => s.accounts);
   const selectedId = useAccountStore((s) => s.selectedId);
