@@ -1052,6 +1052,44 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 .hg-value.up { color: var(--up); }
 .hg-value.down { color: var(--down); }
 
+/* ─────────── detail panel trade buttons ─────────── */
+.trade-actions {
+  display: flex; gap: 10px; margin-top: 16px;
+}
+.trade-btn {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.15s;
+}
+.trade-btn.buy {
+  background: var(--up-soft);
+  color: var(--up);
+  border-color: var(--up);
+}
+.trade-btn.buy:hover:not(:disabled) {
+  background: var(--up);
+  color: white;
+}
+.trade-btn.sell {
+  background: var(--down-soft);
+  color: var(--down);
+  border-color: var(--down);
+}
+.trade-btn.sell:hover:not(:disabled) {
+  background: var(--down);
+  color: white;
+}
+.trade-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ─────────── trade modal ─────────── */
 .trade-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
