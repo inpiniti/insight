@@ -223,312 +223,303 @@ export default function AccountPage() {
           <h1 className="hero-title">{T.title}</h1>
         </section>
 
-        <form onSubmit={handleAddAccount} className="account-form">
-          <h2 className="account-form-title">{T.addTitle}</h2>
-          <div className="form-grid">
-            <div className="form-field">
-              <label className="form-label">{T.nameLabel}</label>
-              <input
-                type="text"
-                placeholder={T.namePh}
-                value={formInput.name}
-                onChange={(e) => setFormInput({ ...formInput, name: e.target.value })}
-                className="form-input"
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">{T.appkeyLabel}</label>
-              <div className="form-input-wrap">
-                <input
-                  type={formInput.showKey ? "text" : "password"}
-                  placeholder={T.appkeyLabel}
-                  value={formInput.appkey}
-                  onChange={(e) => setFormInput({ ...formInput, appkey: e.target.value })}
-                  className="form-input"
-                />
-                <button
-                  type="button"
-                  className="form-eye-btn"
-                  onClick={() => setFormInput({ ...formInput, showKey: !formInput.showKey })}
-                >
-                  {formInput.showKey ? "👁" : "🙈"}
-                </button>
-              </div>
-            </div>
-            <div className="form-field">
-              <label className="form-label">{T.appsecretLabel}</label>
-              <div className="form-input-wrap">
-                <input
-                  type={formInput.showSecret ? "text" : "password"}
-                  placeholder={T.appsecretLabel}
-                  value={formInput.appsecret}
-                  onChange={(e) => setFormInput({ ...formInput, appsecret: e.target.value })}
-                  className="form-input"
-                />
-                <button
-                  type="button"
-                  className="form-eye-btn"
-                  onClick={() => setFormInput({ ...formInput, showSecret: !formInput.showSecret })}
-                >
-                  {formInput.showSecret ? "👁" : "🙈"}
-                </button>
-              </div>
-            </div>
-            <div className="form-field">
-              <label className="form-label">{T.accountNoLabel}</label>
-              <input
-                type="text"
-                placeholder={T.accountNoPh}
-                value={formInput.accountNo}
-                onChange={(e) => setFormInput({ ...formInput, accountNo: e.target.value })}
-                className="form-input"
-              />
-            </div>
-          </div>
-          <button type="submit" className="form-submit">
-            {T.addBtn}
-          </button>
-        </form>
+        <div className="acc-grid">
+          {/* LEFT PANEL: Account List + Add Form */}
+          <div className="acc-list-wrap">
+            {/* Account List */}
+            {accounts.length > 0 && (
+              <div>
+                {accounts.map((account) => {
+                  const isSelected = account.id === selectedId;
+                  const tokenStatus = !account.token
+                    ? "none"
+                    : isTokenExpired(account)
+                      ? "expired"
+                      : "valid";
+                  const tokenLabel =
+                    tokenStatus === "none"
+                      ? T.tokenNone
+                      : tokenStatus === "expired"
+                        ? T.tokenExpired
+                        : `${T.tokenValid} · ${new Date(account.tokenExpiresAt!).toLocaleTimeString(lang === "ko" ? "ko-KR" : "en-US", { hour: "2-digit", minute: "2-digit" })}`;
 
-        {accounts.length > 0 && (
-          <div className="account-list">
-            <div className="account-list-title">{T.listTitle}</div>
-            {accounts.map((account) => {
-              const isSelected = account.id === selectedId;
-              const tokenStatus = !account.token
-                ? "none"
-                : isTokenExpired(account)
-                  ? "expired"
-                  : "valid";
-              const tokenLabel =
-                tokenStatus === "none"
-                  ? T.tokenNone
-                  : tokenStatus === "expired"
-                    ? T.tokenExpired
-                    : `${T.tokenValid} · ${new Date(account.tokenExpiresAt!).toLocaleTimeString(lang === "ko" ? "ko-KR" : "en-US", { hour: "2-digit", minute: "2-digit" })}`;
-
-              return (
-                <div
-                  key={account.id}
-                  className={`account-row ${isSelected ? "selected" : ""}`}
-                  onClick={() => selectAccount(account.id)}
-                >
-                  <input
-                    type="radio"
-                    className="account-radio"
-                    checked={isSelected}
-                    readOnly
-                  />
-                  <div className="account-name">
-                    {account.name || account.accountNo}
-                  </div>
-                  <div className="account-no">{account.accountNo}</div>
-                  <div className={`token-badge ${tokenStatus}`}>{tokenLabel}</div>
-                  <button
-                    type="button"
-                    className="account-delete-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeAccount(account.id);
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {accounts.length === 0 && <p style={{ padding: "40px", textAlign: "center", color: "var(--ink-3)" }}>{T.noAccounts}</p>}
-
-        {selectedAccount && (
-          <div style={{ marginBottom: "20px", display: "flex", gap: "12px" }}>
-            <button
-              className="balance-refresh-btn"
-              onClick={handleIssueToken}
-              disabled={tokenLoading}
-              style={{ border: "1px solid var(--accent)", color: "var(--accent)" }}
-            >
-              {tokenLoading ? (lang === "ko" ? "발급 중..." : "Issuing...") : (lang === "ko" ? "토큰 발급" : "Issue Token")}
-            </button>
-            {tokenError && <div style={{ color: "var(--up)", fontSize: "13px", display: "flex", alignItems: "center" }}>{tokenError}</div>}
-            {selectedAccount && !isTokenExpired(selectedAccount) && selectedAccount.token && (
-              <div style={{ color: "var(--down)", fontSize: "13px", display: "flex", alignItems: "center" }}>
-                {lang === "ko" ? "✓ 토큰 유효" : "✓ Token valid"}
-              </div>
-            )}
-          </div>
-        )}
-
-        {selectedAccount ? (
-          <div className="balance-section">
-            <div className="balance-section-head">
-              <h2 className="balance-title">{T.balanceTitle}</h2>
-              <button
-                className="balance-refresh-btn"
-                onClick={handleRefresh}
-                disabled={balanceLoading}
-              >
-                {balanceLoading ? T.refreshing : T.refreshBtn}
-              </button>
-            </div>
-
-            {balanceError && <div className="balance-error">{balanceError}</div>}
-
-            {balanceData && (
-              <>
-                <div style={{ marginBottom: "24px" }}>
-                  <h3 style={{ marginBottom: "16px", fontSize: "14px", fontWeight: "600" }}>
-                    {lang === "ko" ? "💰 자산 현황" : "💰 Asset Summary"}
-                  </h3>
-
-                  <div className="balance-summary">
-                    {balanceData.krw && (
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                        <div className="balance-card">
-                          <div className="balance-card-label">
-                            {lang === "ko" ? "🏦 실자산" : "🏦 Total Asset"}
-                          </div>
-                          <div className="balance-card-value">₩{Number(balanceData.krw.totalAsset).toLocaleString()}</div>
-                          <div className="balance-card-sub" style={{ fontSize: "11px", marginTop: "8px", lineHeight: "1.4" }}>
-                            {lang === "ko"
-                              ? `📊 평가금액: ₩${Number(balanceData.krw.evaluationAmount).toLocaleString()}\n예수금: ₩${Number(balanceData.krw.totalDeposit).toLocaleString()}`
-                              : `📊 Eval: $${Number(balanceData.krw.evaluationAmount).toLocaleString()}\nDeposit: $${Number(balanceData.krw.totalDeposit).toLocaleString()}`}
-                          </div>
+                  return (
+                    <div
+                      key={account.id}
+                      className={`acc-item ${isSelected ? "selected" : ""}`}
+                      onClick={() => selectAccount(account.id)}
+                    >
+                      <input
+                        type="radio"
+                        className="acc-radio"
+                        checked={isSelected}
+                        readOnly
+                      />
+                      <div className="acc-item-content">
+                        <div className="acc-item-name">
+                          {account.name || account.accountNo}
                         </div>
-
-                        <div className="balance-card">
-                          <div className="balance-card-label">
-                            {lang === "ko" ? "📈 평가손익" : "📈 P&L"}
-                          </div>
-                          <div className={`balance-card-value ${Number(balanceData.krw.evaluationPnl) >= 0 ? "" : "balance-card-loss"}`}
-                            style={{ color: Number(balanceData.krw.evaluationPnl) >= 0 ? "var(--up)" : "var(--down)" }}>
-                            {Number(balanceData.krw.evaluationPnl) >= 0 ? "+" : ""}₩{Number(balanceData.krw.evaluationPnl).toLocaleString()}
-                          </div>
-                          <div className="balance-card-sub" style={{ fontSize: "12px" }}>
-                            {lang === "ko" ? "수익률: " : "Rate: "}{Number(balanceData.krw.evaluationRate).toFixed(2)}%
-                          </div>
-                        </div>
-
-                        <div className="balance-card">
-                          <div className="balance-card-label">
-                            {lang === "ko" ? "💵 총예수금" : "💵 Total Deposit"}
-                          </div>
-                          <div className="balance-card-value">₩{Number(balanceData.krw.totalDeposit).toLocaleString()}</div>
-                          <div className="balance-card-sub">
-                            {lang === "ko" ? "사용가능: " : "Available: "}₩{Number(balanceData.krw.availableBalance).toLocaleString()}
-                          </div>
-                        </div>
-
-                        <div className="balance-card">
-                          <div className="balance-card-label">
-                            {lang === "ko" ? "🛒 평가금액" : "🛒 Evaluation"}
-                          </div>
-                          <div className="balance-card-value">₩{Number(balanceData.krw.evaluationAmount).toLocaleString()}</div>
-                          <div className="balance-card-sub">
-                            {lang === "ko" ? "매수금액: " : "Purchase: "}₩{Number(balanceData.krw.purchaseAmount).toLocaleString()}
-                          </div>
-                        </div>
+                        <div className="acc-item-no">{account.accountNo}</div>
+                        <div className={`acc-token-badge ${tokenStatus}`}>{tokenLabel}</div>
                       </div>
-                    )}
-
-                    {balanceData.usd && (
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "16px" }}>
-                        <div className="balance-card">
-                          <div className="balance-card-label">
-                            {lang === "ko" ? "💷 USD 예수금" : "💷 USD Deposit"}
-                          </div>
-                          <div className="balance-card-value">${Number(balanceData.usd.totalDeposit).toFixed(2)}</div>
-                          <div className="balance-card-sub">
-                            {lang === "ko" ? "사용가능: " : "Available: "}${Number(balanceData.usd.availableBalance).toFixed(2)}
-                          </div>
-                        </div>
-
-                        <div className="balance-card">
-                          <div className="balance-card-label">
-                            {lang === "ko" ? "📍 USD 매수금액" : "📍 USD Purchase"}
-                          </div>
-                          <div className="balance-card-value">${Number(balanceData.usd.purchaseAmount).toFixed(2)}</div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {balanceData.holdings && balanceData.holdings.length > 0 && (
-                  <div>
-                    <h3 style={{ marginBottom: "12px", fontSize: "14px", fontWeight: "600" }}>
-                      📊 {T.holdings} ({balanceData.holdings.length})
-                    </h3>
-                    <div className="holding-table">
-                      <div className="holding-row holding-row-head">
-                        <div style={{ minWidth: "60px" }}>{T.ticker}</div>
-                        <div style={{ flex: 1 }}>{T.name}</div>
-                        <div style={{ minWidth: "50px" }}>{T.quantity}</div>
-                        <div style={{ minWidth: "70px" }}>{lang === "ko" ? "매수가" : "Buy"}</div>
-                        <div style={{ minWidth: "70px" }}>{lang === "ko" ? "현재가" : "Price"}</div>
-                        <div style={{ minWidth: "70px" }}>{T.value}</div>
-                        <div style={{ minWidth: "60px" }}>{lang === "ko" ? "수익률" : "Return"}</div>
-                        <div style={{ minWidth: "100px" }}>{lang === "ko" ? "손익" : "P&L"}</div>
-                      </div>
-                      {balanceData.holdings.map((h: any) => {
-                        const qty = parseFloat(h.ccld_qty_smtl1 || h.cblc_qty13 || 0);
-                        const avgPrice = parseFloat(h.avg_unpr3 || 0);
-                        const currentPrice = parseFloat(h.ovrs_now_pric1 || 0);
-                        const value = qty * currentPrice;
-                        const pnlAmount = value - qty * avgPrice;
-                        const pnlPercent = qty > 0 ? (pnlAmount / (qty * avgPrice)) * 100 : 0;
-                        const isPnlPos = pnlAmount >= 0;
-
-                        // 환율 적용 (원화 변환)
-                        const baseExrt = parseFloat(h.bass_exrt || 1300);
-                        const avgPriceKrw = avgPrice * baseExrt;
-                        const currentPriceKrw = currentPrice * baseExrt;
-                        const valueKrw = value * baseExrt;
-                        const pnlAmountKrw = pnlAmount * baseExrt;
-
-                        return (
-                          <div key={h.pdno} className="holding-row">
-                            <div className="holding-ticker">{h.pdno}</div>
-                            <div style={{ fontSize: "12px", color: "var(--ink-3)" }}>{h.prdt_name}</div>
-                            <div className="holding-cell">{qty.toFixed(0)}</div>
-                            <div className="holding-cell" title={`${avgPrice.toFixed(2)} USD`}>
-                              ${avgPrice.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(avgPriceKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
-                            </div>
-                            <div className="holding-cell" title={`${currentPrice.toFixed(2)} USD`}>
-                              ${currentPrice.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(currentPriceKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
-                            </div>
-                            <div className="holding-cell" title={`${value.toFixed(2)} USD`}>
-                              ${value.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(valueKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
-                            </div>
-                            <div className={`holding-cell ${isPnlPos ? "holding-pnl pos" : "holding-pnl neg"}`}>
-                              {pnlPercent.toFixed(1)}%
-                            </div>
-                            <div className={`holding-cell ${isPnlPos ? "holding-pnl pos" : "holding-pnl neg"}`}>
-                              {isPnlPos ? "+" : ""}{pnlAmount.toFixed(2)}$<br/><span style={{ fontSize: "10px" }}>{isPnlPos ? "+" : ""}₩{(pnlAmountKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
-                            </div>
-                          </div>
-                        );
-                      })}
+                      <button
+                        type="button"
+                        className="acc-delete-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeAccount(account.id);
+                        }}
+                      >
+                        ✕
+                      </button>
                     </div>
-                  </div>
-                )}
-              </>
+                  );
+                })}
+              </div>
             )}
 
-            {!balanceData && !balanceError && (
-              <p style={{ paddingTop: "32px", textAlign: "center", color: "var(--ink-3)" }}>
-                {T.refreshBtn} {lang === "ko" ? "버튼을 눌러 잔고를 조회하세요." : "to view balance"}
+            {accounts.length === 0 && (
+              <p style={{ padding: "20px", textAlign: "center", color: "var(--ink-3)", fontSize: "13px" }}>
+                {T.noAccounts}
               </p>
             )}
+
+            {/* Add Account Form */}
+            <form onSubmit={handleAddAccount} className="acc-form">
+              <div className="acc-form-field">
+                <label className="acc-form-label">{T.nameLabel}</label>
+                <input
+                  type="text"
+                  placeholder={T.namePh}
+                  value={formInput.name}
+                  onChange={(e) => setFormInput({ ...formInput, name: e.target.value })}
+                  className="acc-form-input"
+                />
+              </div>
+              <div className="acc-form-field">
+                <label className="acc-form-label">{T.appkeyLabel}</label>
+                <div className="acc-form-input-wrap">
+                  <input
+                    type={formInput.showKey ? "text" : "password"}
+                    placeholder={T.appkeyLabel}
+                    value={formInput.appkey}
+                    onChange={(e) => setFormInput({ ...formInput, appkey: e.target.value })}
+                    className="acc-form-input"
+                  />
+                  <button
+                    type="button"
+                    className="acc-form-eye-btn"
+                    onClick={() => setFormInput({ ...formInput, showKey: !formInput.showKey })}
+                  >
+                    {formInput.showKey ? "👁" : "🙈"}
+                  </button>
+                </div>
+              </div>
+              <div className="acc-form-field">
+                <label className="acc-form-label">{T.appsecretLabel}</label>
+                <div className="acc-form-input-wrap">
+                  <input
+                    type={formInput.showSecret ? "text" : "password"}
+                    placeholder={T.appsecretLabel}
+                    value={formInput.appsecret}
+                    onChange={(e) => setFormInput({ ...formInput, appsecret: e.target.value })}
+                    className="acc-form-input"
+                  />
+                  <button
+                    type="button"
+                    className="acc-form-eye-btn"
+                    onClick={() => setFormInput({ ...formInput, showSecret: !formInput.showSecret })}
+                  >
+                    {formInput.showSecret ? "👁" : "🙈"}
+                  </button>
+                </div>
+              </div>
+              <div className="acc-form-field">
+                <label className="acc-form-label">{T.accountNoLabel}</label>
+                <input
+                  type="text"
+                  placeholder={T.accountNoPh}
+                  value={formInput.accountNo}
+                  onChange={(e) => setFormInput({ ...formInput, accountNo: e.target.value })}
+                  className="acc-form-input"
+                />
+              </div>
+              <button type="submit" className="acc-form-submit">
+                {T.addBtn}
+              </button>
+            </form>
           </div>
-        ) : (
-          <div className="balance-section" style={{ opacity: 0.6, pointerEvents: "none" }}>
-            <h2 className="balance-title">{T.balanceTitle}</h2>
-            <p style={{ paddingTop: "32px", textAlign: "center", color: "var(--ink-3)" }}>{T.empty}</p>
-          </div>
-        )}
+
+          {/* RIGHT PANEL: Account Details & Balance */}
+          {selectedAccount ? (
+            <div className="acc-detail">
+              {/* Detail Head */}
+              <div className="acc-detail-head">
+                <h2 className="acc-detail-title">
+                  {selectedAccount.name || selectedAccount.accountNo}
+                </h2>
+                <div className="acc-detail-info">
+                  {lang === "ko" ? "계좌번호: " : "Account: "}{selectedAccount.accountNo}
+                </div>
+              </div>
+
+              {/* Token Management Row */}
+              <div className="acc-token-row">
+                <button
+                  className="acc-token-btn"
+                  onClick={handleIssueToken}
+                  disabled={tokenLoading}
+                >
+                  {tokenLoading ? (lang === "ko" ? "발급 중..." : "Issuing...") : (lang === "ko" ? "토큰 발급" : "Issue Token")}
+                </button>
+                <div className="acc-token-status">
+                  {tokenError ? (
+                    <div style={{ color: "var(--up)", fontSize: "12px" }}>{tokenError}</div>
+                  ) : selectedAccount && !isTokenExpired(selectedAccount) && selectedAccount.token ? (
+                    <div style={{ color: "var(--down)", fontSize: "12px" }}>
+                      ✓ {lang === "ko" ? "토큰 유효" : "Token valid"}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Balance Section */}
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  <h3 style={{ fontSize: "14px", fontWeight: "600" }}>{T.balanceTitle}</h3>
+                  <button
+                    className="acc-balance-btn"
+                    onClick={handleRefresh}
+                    disabled={balanceLoading}
+                  >
+                    {balanceLoading ? T.refreshing : T.refreshBtn}
+                  </button>
+                </div>
+
+                {balanceError && (
+                  <div style={{ color: "var(--up)", fontSize: "12px", marginBottom: "12px" }}>
+                    {balanceError}
+                  </div>
+                )}
+
+                {balanceData && (
+                  <>
+                    {/* Balance Grid */}
+                    <div className="acc-balance-grid">
+                      {balanceData.krw && (
+                        <>
+                          <div className="acc-balance-cell">
+                            <div className="acc-balance-label">
+                              {lang === "ko" ? "실자산" : "Total Asset"}
+                            </div>
+                            <div className="acc-balance-value">₩{Number(balanceData.krw.totalAsset).toLocaleString()}</div>
+                          </div>
+                          <div className="acc-balance-cell">
+                            <div className="acc-balance-label">
+                              {lang === "ko" ? "총예수금" : "Total Deposit"}
+                            </div>
+                            <div className="acc-balance-value">₩{Number(balanceData.krw.totalDeposit).toLocaleString()}</div>
+                          </div>
+                          <div className="acc-balance-cell">
+                            <div className="acc-balance-label">
+                              {lang === "ko" ? "평가금액" : "Evaluation"}
+                            </div>
+                            <div className="acc-balance-value">₩{Number(balanceData.krw.evaluationAmount).toLocaleString()}</div>
+                          </div>
+                          <div className="acc-balance-cell">
+                            <div className="acc-balance-label">
+                              {lang === "ko" ? "평가손익" : "P&L"}
+                            </div>
+                            <div className="acc-balance-value" style={{ color: Number(balanceData.krw.evaluationPnl) >= 0 ? "var(--up)" : "var(--down)" }}>
+                              {Number(balanceData.krw.evaluationPnl) >= 0 ? "+" : ""}₩{Number(balanceData.krw.evaluationPnl).toLocaleString()}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Holdings */}
+                    {balanceData.holdings && balanceData.holdings.length > 0 && (
+                      <div className="acc-holdings">
+                        <h3 style={{ marginBottom: "12px", fontSize: "14px", fontWeight: "600" }}>
+                          📊 {T.holdings} ({balanceData.holdings.length})
+                        </h3>
+                        <div className="holding-table">
+                          <div className="holding-row holding-row-head">
+                            <div style={{ minWidth: "60px" }}>{T.ticker}</div>
+                            <div style={{ flex: 1 }}>{T.name}</div>
+                            <div style={{ minWidth: "50px" }}>{T.quantity}</div>
+                            <div style={{ minWidth: "70px" }}>{lang === "ko" ? "매수가" : "Buy"}</div>
+                            <div style={{ minWidth: "70px" }}>{lang === "ko" ? "현재가" : "Price"}</div>
+                            <div style={{ minWidth: "70px" }}>{T.value}</div>
+                            <div style={{ minWidth: "60px" }}>{lang === "ko" ? "수익률" : "Return"}</div>
+                            <div style={{ minWidth: "100px" }}>{lang === "ko" ? "손익" : "P&L"}</div>
+                          </div>
+                          {balanceData.holdings.map((h: any) => {
+                            const qty = parseFloat(h.ccld_qty_smtl1 || h.cblc_qty13 || 0);
+                            const avgPrice = parseFloat(h.avg_unpr3 || 0);
+                            const currentPrice = parseFloat(h.ovrs_now_pric1 || 0);
+                            const value = qty * currentPrice;
+                            const pnlAmount = value - qty * avgPrice;
+                            const pnlPercent = qty > 0 ? (pnlAmount / (qty * avgPrice)) * 100 : 0;
+                            const isPnlPos = pnlAmount >= 0;
+
+                            const baseExrt = parseFloat(h.bass_exrt || 1300);
+                            const avgPriceKrw = avgPrice * baseExrt;
+                            const currentPriceKrw = currentPrice * baseExrt;
+                            const valueKrw = value * baseExrt;
+                            const pnlAmountKrw = pnlAmount * baseExrt;
+
+                            return (
+                              <div key={h.pdno} className="holding-row">
+                                <div className="holding-ticker">{h.pdno}</div>
+                                <div style={{ fontSize: "12px", color: "var(--ink-3)" }}>{h.prdt_name}</div>
+                                <div className="holding-cell">{qty.toFixed(0)}</div>
+                                <div className="holding-cell" title={`${avgPrice.toFixed(2)} USD`}>
+                                  ${avgPrice.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(avgPriceKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
+                                </div>
+                                <div className="holding-cell" title={`${currentPrice.toFixed(2)} USD`}>
+                                  ${currentPrice.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(currentPriceKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
+                                </div>
+                                <div className="holding-cell" title={`${value.toFixed(2)} USD`}>
+                                  ${value.toFixed(2)}<br/><span style={{ fontSize: "10px", color: "var(--ink-4)" }}>₩{(valueKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
+                                </div>
+                                <div className={`holding-cell ${isPnlPos ? "holding-pnl pos" : "holding-pnl neg"}`}>
+                                  {pnlPercent.toFixed(1)}%
+                                </div>
+                                <div className={`holding-cell ${isPnlPos ? "holding-pnl pos" : "holding-pnl neg"}`}>
+                                  {isPnlPos ? "+" : ""}{pnlAmount.toFixed(2)}$<br/><span style={{ fontSize: "10px" }}>{isPnlPos ? "+" : ""}₩{(pnlAmountKrw).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {!balanceData.holdings || balanceData.holdings.length === 0 && (
+                      <p style={{ paddingTop: "20px", textAlign: "center", color: "var(--ink-3)", fontSize: "12px" }}>
+                        {lang === "ko" ? "보유 종목이 없습니다" : "No holdings"}
+                      </p>
+                    )}
+                  </>
+                )}
+
+                {!balanceData && !balanceError && (
+                  <p style={{ paddingTop: "20px", textAlign: "center", color: "var(--ink-3)", fontSize: "12px" }}>
+                    {T.refreshBtn} {lang === "ko" ? "버튼을 눌러 잔고를 조회하세요." : "to view balance"}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="acc-detail" style={{ opacity: 0.5, pointerEvents: "none" }}>
+              <p style={{ textAlign: "center", color: "var(--ink-3)", fontSize: "13px", paddingTop: "40px" }}>
+                {T.empty}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
