@@ -127,8 +127,8 @@ export default function AccountPage() {
     setBalanceData(null);
 
     try {
-      let token = selectedAccount.token;
-      let expiresAt = selectedAccount.tokenExpiresAt;
+      let token: string = selectedAccount.token || "";
+      let expiresAt: number = selectedAccount.tokenExpiresAt || 0;
 
       if (!token || isTokenExpired(selectedAccount)) {
         const tokenRes = await fetch("/api/account/token", {
