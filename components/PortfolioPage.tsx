@@ -312,7 +312,7 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
                   tickerStore.open({
                     ticker: r.stock,
                     name: r.name,
-                    price: safeClose,
+                    price: safeClose || 0,
                     changePct: 0,
                     sector: r.sector,
                     source: "portfolio",
