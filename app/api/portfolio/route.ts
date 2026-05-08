@@ -40,6 +40,7 @@ export async function GET() {
         based_on_person: backendData.based_on_person || [],
         based_on_stock: (backendData.based_on_stock || []).map((item: any) => ({
           stock: item.stock,
+          name: item.name || item.stock,
           person: item.person || [],
           person_count: item.person_count || 0,
           sum_ratio: item.sum_ratio || 0,
@@ -68,6 +69,7 @@ export async function GET() {
       based_on_person: [],
       based_on_stock: PORTFOLIO_DATA.map((item) => ({
         stock: item.stock,
+        name: item.name,
         person: [],
         person_count: item.person_count,
         sum_ratio: item.sum_ratio,
