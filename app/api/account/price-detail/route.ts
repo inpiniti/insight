@@ -38,10 +38,28 @@ export async function GET(req: NextRequest) {
       SYMB: symbol,
     });
 
+    const headers = makeHeaders(appkey, appsecret, token);
     const url = `${KIS_BASE_URL}${PRICE_DETAIL_PATH}?${params}`;
+
+    console.log('[KIS Price Detail Request] =====================');
+    console.log('[KIS Price Detail Request] URL:', url);
+    console.log('[KIS Price Detail Request] Headers:', {
+      'Content-Type': headers['Content-Type'],
+      'authorization': headers.authorization ? 'Bearer ***' : 'MISSING',
+      'appkey': appkey ? '***' : 'MISSING',
+      'appsecret': appsecret ? '***' : 'MISSING',
+      'tr_id': headers.tr_id,
+      'custtype': headers.custtype,
+    });
+    console.log('[KIS Price Detail Request] Params:', {
+      EXCD: exchange,
+      SYMB: symbol,
+    });
+    console.log('[KIS Price Detail Request] =====================');
+
     const response = await fetch(url, {
       method: 'GET',
-      headers: makeHeaders(appkey, appsecret, token),
+      headers,
     });
 
     if (!response.ok) {
