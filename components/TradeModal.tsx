@@ -43,10 +43,12 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
         const accountId = localStorage.getItem("bunseok_active_account_v1");
         if (!accountId) {
           console.error("계좌가 선택되지 않았습니다");
+          setLoading(false);
           return;
         }
 
-        const accountData = JSON.parse(localStorage.getItem("bunseok_accounts_v1") || "{}");
+        const accountStr = localStorage.getItem("bunseok_accounts_v1");
+        const accountData = accountStr ? JSON.parse(accountStr) : {};
         const account = accountData[accountId];
         if (!account?.token || !account?.appkey) {
           console.error("토큰 또는 appkey가 없습니다");
@@ -149,6 +151,12 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
 
       // localStorage에서 계좌 정보 조회
       const accountId = localStorage.getItem("bunseok_active_account_v1");
+      if (!accountId) {
+        alert(lang === "ko" ? "계좌가 선택되지 않았습니다" : "No account selected");
+        setOrdering(false);
+        return;
+      }
+
       const accountData = JSON.parse(localStorage.getItem("bunseok_accounts_v1") || "{}");
       const account = accountData[accountId];
 
