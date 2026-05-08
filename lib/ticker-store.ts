@@ -5,6 +5,7 @@ export interface TickerPayload {
   changePct?: number;
   sector?: string;
   source?: string;
+  exchange?: string;
 }
 
 export interface TickerState {

@@ -586,6 +586,7 @@ export default function AccountPage() {
                                     price: currentPrice,
                                     changePct: chg,
                                     source: "account",
+                                    exchange: h.ovrs_excg_cd || "NASD",
                                   });
                                 }}
                               >

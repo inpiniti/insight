@@ -301,7 +301,10 @@ export default function GlobalTickerPanel({ lang }: { lang: "ko" | "en" }) {
       {tradeMode && (
         <TradeModal
           mode={tradeMode}
-          info={info}
+          info={{
+            ...info,
+            exchange: ticker?.exchange || "NASD",
+          }}
           lang={lang}
           onClose={() => setTradeMode(null)}
           onSubmit={() => setTradeMode(null)}

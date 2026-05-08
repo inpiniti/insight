@@ -33,7 +33,9 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
   const [priceDetail, setPriceDetail] = useState<any>(null);
   const [exchange, setExchange] = useState(info.exchange || "NASD");
 
-  const selectedAccount = useAccountStore((s) => s.getSelected());
+  const selectedId = useAccountStore((s) => s.selectedId);
+  const accounts = useAccountStore((s) => s.accounts);
+  const selectedAccount = accounts.find((a) => a.id === selectedId) ?? null;
 
   // 모달 열릴 때 현재가 상세 정보 조회
   useEffect(() => {
@@ -81,7 +83,7 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
     };
 
     fetchPriceDetail();
-  }, [info.ticker, info.exchange, selectedAccount]);
+  }, [info.ticker, info.exchange, selectedAccount, selectedId]);
 
   const refOpen = priceDetail?.prices?.open || +(info.price * 0.992).toFixed(2);
   const refHigh = priceDetail?.prices?.high || +(info.price * 1.013).toFixed(2);
