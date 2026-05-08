@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
     }
 
     const params = new URLSearchParams({
+      AUTH: "",  // 필수 파라미터지만 Description 없음, 빈 문자열로 시도
       EXCD: exchange,
       SYMB: symbol,
     });
