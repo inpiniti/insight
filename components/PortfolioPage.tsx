@@ -376,7 +376,6 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
             <div className="pf-c-sec">{T.exchange}</div>
             <div className="pf-c-num">{T.pc}</div>
             <div className="pf-c-num">{T.sr}</div>
-            <div className="pf-c-num">{T.dcf}</div>
             <div className="pf-c-w">{T.weight}</div>
             <div className="pf-c-num" style={{ minWidth: 70 }}>{lang === "ko" ? "제안갯수" : "Qty"}</div>
           </div>
@@ -384,7 +383,6 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
             const realIdx = weighted.findIndex(x => x.stock === r.stock);
             const safeWeight = typeof r.weight === "number" ? r.weight : 0;
             const safeSumRatio = typeof r.sum_ratio === "number" ? r.sum_ratio : 0;
-            const safeDcf = typeof r.dcf_vs_market_cap_pct === "number" ? r.dcf_vs_market_cap_pct : 0;
             const safeClose = typeof r.close === "number" ? r.close : null;
             const safeExchange = r.exchange || "—";
 
@@ -418,9 +416,6 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
                 <div className="pf-c-sec">{safeExchange}</div>
                 <div className="pf-c-num num">{r.person_count}</div>
                 <div className="pf-c-num num">{safeSumRatio.toFixed(1)}%</div>
-                <div className="pf-c-num num" style={{ color: safeDcf >= 100 ? "var(--up)" : "var(--ink-2)" }}>
-                  {safeDcf.toFixed(0)}%
-                </div>
                 <div className="pf-c-w">
                   <div className="pf-w-bar-wrap">
                     <div className="pf-w-bar" style={{ width: `${safeWeight}%`, background: palette[realIdx % palette.length] }}></div>
