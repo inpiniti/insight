@@ -10,7 +10,6 @@ function makeHeaders(appkey: string, appsecret: string, token: string) {
     appkey,
     appsecret,
     tr_id: 'HHDFS76200200',
-    custtype: 'P',
   };
 }
 
@@ -34,7 +33,7 @@ export async function GET(req: NextRequest) {
     }
 
     const params = new URLSearchParams({
-      AUTH: "",  // 필수 파라미터지만 Description 없음, 빈 문자열로 시도
+      AUTH: '', // 필수 파라미터지만 Description 없음, 빈 문자열로 시도
       EXCD: exchange,
       SYMB: symbol,
     });
@@ -46,11 +45,11 @@ export async function GET(req: NextRequest) {
     console.log('[KIS Price Detail Request] URL:', url);
     console.log('[KIS Price Detail Request] Headers:', {
       'Content-Type': headers['Content-Type'],
-      'authorization': headers.authorization ? 'Bearer ***' : 'MISSING',
-      'appkey': appkey ? '***' : 'MISSING',
-      'appsecret': appsecret ? '***' : 'MISSING',
-      'tr_id': headers.tr_id,
-      'custtype': headers.custtype,
+      authorization: headers.authorization ? 'Bearer ***' : 'MISSING',
+      appkey: appkey ? '***' : 'MISSING',
+      appsecret: appsecret ? '***' : 'MISSING',
+      tr_id: headers.tr_id,
+      custtype: headers.custtype,
     });
     console.log('[KIS Price Detail Request] Params:', {
       EXCD: exchange,
