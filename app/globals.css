@@ -1430,3 +1430,118 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
   .acc-grid { grid-template-columns: 1fr; }
   .acc-balance-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ─────────── account ─────────── */
+.acc-grid {
+  display: grid; grid-template-columns: 360px 1fr; gap: 18px;
+  margin-bottom: 60px;
+}
+.acc-list-wrap {
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex; flex-direction: column; gap: 12px;
+  align-self: start;
+}
+.acc-list-head {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.acc-empty {
+  padding: 32px 12px; text-align: center; color: var(--ink-3); font-size: 13px;
+  background: var(--bg-soft); border-radius: 12px;
+}
+.acc-list { display: flex; flex-direction: column; gap: 8px; }
+.acc-item {
+  padding: 14px 16px; border: 1px solid var(--border);
+  border-radius: 12px; cursor: pointer;
+  transition: all 0.15s;
+  background: var(--bg);
+}
+.acc-item:hover { border-color: var(--border-strong); }
+.acc-item.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.acc-item-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.acc-name { font-weight: 700; font-size: 14px; }
+.acc-active-pill {
+  font-size: 10px; font-weight: 700; color: #fff;
+  background: var(--accent); padding: 2px 8px; border-radius: 999px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.acc-no { font-size: 12px; color: var(--ink-3); margin-bottom: 8px; }
+.acc-meta { display: flex; align-items: center; gap: 6px; }
+.acc-token-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.acc-token-dot.ok { background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+.acc-token-dot.off { background: var(--ink-4); }
+.acc-del {
+  margin-left: auto; padding: 4px; color: var(--ink-4);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.acc-del:hover { color: var(--up); background: var(--up-soft); }
+
+.acc-form {
+  background: var(--bg-soft); border-radius: 12px;
+  padding: 16px; display: flex; flex-direction: column; gap: 10px;
+  border: 1px solid var(--border);
+}
+.acc-form-head { font-weight: 700; font-size: 14px; }
+.acc-field { display: flex; flex-direction: column; gap: 4px; }
+.acc-field span { font-size: 11px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.04em; }
+.acc-field input {
+  padding: 9px 12px; border: 1px solid var(--border);
+  background: var(--bg-elev); color: var(--ink);
+  border-radius: 8px; font-size: 13px; font-family: "Inter", inherit;
+  outline: none;
+}
+.acc-field input:focus { border-color: var(--accent); }
+.acc-form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+
+.acc-detail {
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  min-height: 480px;
+}
+.acc-detail-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; min-height: 380px; color: var(--ink-3); text-align: center;
+}
+.acc-detail-empty-icon {
+  width: 64px; height: 64px; border-radius: 16px;
+  background: var(--bg-soft); color: var(--ink-4);
+  display: grid; place-items: center;
+}
+.acc-detail-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+.acc-detail-name { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.acc-detail-no { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+
+.acc-token-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; background: var(--bg-soft); border-radius: 12px;
+  margin-bottom: 18px; gap: 12px; flex-wrap: wrap;
+}
+.acc-token-info { display: flex; align-items: center; gap: 8px; }
+
+.acc-balance-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  margin-bottom: 8px;
+}
+.acc-balance-cell {
+  background: var(--bg-soft); border-radius: 12px;
+  padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.acc-balance-cell .strip-value { font-size: 22px; }
+
+@media (max-width: 1000px) {
+  .acc-grid { grid-template-columns: 1fr; }
+  .acc-balance-grid { grid-template-columns: repeat(2, 1fr); }
+}
