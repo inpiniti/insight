@@ -366,25 +366,12 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
           )}
         </div>
 
-        <div className="pf-table">
-          <div className="pf-row pf-row-head">
-            <div className="pf-c-rank">{T.rank}</div>
-            <div className="pf-c-tk">{T.ticker}</div>
-            <div className="pf-c-name">{T.name}</div>
-            <div className="pf-c-sec">{T.sector}</div>
-            <div className="pf-c-num">{T.price}</div>
-            <div className="pf-c-sec">{T.exchange}</div>
-            <div className="pf-c-num">{T.pc}</div>
-            <div className="pf-c-num">{T.sr}</div>
-            <div className="pf-c-w">{T.weight}</div>
-            <div className="pf-c-num" style={{ minWidth: 70 }}>{lang === "ko" ? "제안갯수" : "Qty"}</div>
-          </div>
+        <div className="pf-cards">
           {filteredView.length > 0 ? filteredView.map((r, i) => {
             const realIdx = weighted.findIndex(x => x.stock === r.stock);
             const safeWeight = typeof r.weight === "number" ? r.weight : 0;
             const safeSumRatio = typeof r.sum_ratio === "number" ? r.sum_ratio : 0;
             const safeClose = typeof r.close === "number" ? r.close : null;
-            const safeExchange = r.exchange || "—";
 
             // Calculate suggested quantity
             const suggestedQty = totalAssets > 0 && safeClose ?
@@ -392,8 +379,7 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
             return (
               <div
                 key={r.stock}
-                className="pf-row pf-row-clickable"
-                style={{ cursor: "pointer" }}
+                className="pf-card"
                 onClick={() => {
                   tickerStore.open({
                     ticker: r.stock,
@@ -405,25 +391,40 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
                   });
                 }}
               >
-                <div className="pf-c-rank num">{i + 1}</div>
-                <div className="pf-c-tk num">
-                  <span className="pf-logo" style={{ background: palette[realIdx % palette.length] }}>{r.logo}</span>
-                  {r.stock}
-                </div>
-                <div className="pf-c-name">{r.name}</div>
-                <div className="pf-c-sec"><span className="sector-badge">{r.sector}</span></div>
-                <div className="pf-c-num num">{safeClose !== null ? `$${safeClose.toFixed(2)}` : "—"}</div>
-                <div className="pf-c-sec">{safeExchange}</div>
-                <div className="pf-c-num num">{r.person_count}</div>
-                <div className="pf-c-num num">{safeSumRatio.toFixed(1)}%</div>
-                <div className="pf-c-w">
-                  <div className="pf-w-bar-wrap">
-                    <div className="pf-w-bar" style={{ width: `${safeWeight}%`, background: palette[realIdx % palette.length] }}></div>
+                <div className="pf-card-rank">{i + 1}</div>
+                <div className="pf-card-id">
+                  <span className="pf-logo pf-card-logo" style={{ background: palette[realIdx % palette.length] }}>{r.logo}</span>
+                  <div className="pf-card-id-text">
+                    <div className="pf-card-tk">{r.stock}</div>
+                    <div className="pf-card-name">{r.name}</div>
                   </div>
-                  <span className="pf-w-num num">{safeWeight.toFixed(1)}%</span>
                 </div>
-                <div className="pf-c-num num" style={{ minWidth: 70 }}>
-                  {totalAssets > 0 ? suggestedQty.toFixed(2) : "0"}
+                <div className="pf-card-price">
+                  <div className="pf-card-cell-label">{lang === "ko" ? "현재가" : "Price"}</div>
+                  <div className="pf-card-price-num">{safeClose !== null ? `$${safeClose.toFixed(2)}` : "—"}</div>
+                </div>
+                <div className="pf-card-stats">
+                  <div className="pf-card-stat">
+                    <div className="pf-card-cell-label">{lang === "ko" ? "투자자" : "Investors"}</div>
+                    <div className="pf-card-stat-val">{r.person_count}</div>
+                  </div>
+                  <div className="pf-card-stat">
+                    <div className="pf-card-cell-label">{lang === "ko" ? "비율 합" : "Σ Ratio"}</div>
+                    <div className="pf-card-stat-val">{safeSumRatio.toFixed(1)}<span className="pf-card-stat-unit">%</span></div>
+                  </div>
+                  <div className="pf-card-stat pf-card-stat-weight">
+                    <div className="pf-card-cell-label">{T.weight}</div>
+                    <div className="pf-card-weight-row">
+                      <div className="pf-w-bar-wrap">
+                        <div className="pf-w-bar" style={{ width: `${safeWeight}%`, background: palette[realIdx % palette.length] }}></div>
+                      </div>
+                      <div className="pf-card-stat-val">{safeWeight.toFixed(1)}<span className="pf-card-stat-unit">%</span></div>
+                    </div>
+                  </div>
+                  <div className="pf-card-stat">
+                    <div className="pf-card-cell-label">{lang === "ko" ? "제안수량" : "Qty"}</div>
+                    <div className="pf-card-stat-val">{totalAssets > 0 ? suggestedQty.toFixed(2) : "0"}</div>
+                  </div>
                 </div>
               </div>
             );
