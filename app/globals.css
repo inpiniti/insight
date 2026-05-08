@@ -836,17 +836,14 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 }
 
 .pf-c-num:nth-of-type(2),
-.pf-c-num:nth-of-type(3) { display: none; }
-
-.pf-c-num:nth-of-type(4) {
-  grid-column: 5;
-}
+.pf-c-num:nth-of-type(3),
+.pf-c-num:nth-of-type(4) { display: none; }
 
 .pf-c-w {
   display: flex;
   align-items: center;
   gap: 8px;
-  grid-column: 6;
+  grid-column: 5;
 }
 
 .pf-w-bar-wrap {
@@ -909,7 +906,8 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
   }
 
   .pf-row {
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 0;
     padding: 0;
     margin-bottom: 12px;
@@ -917,7 +915,6 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     overflow: hidden;
-    display: grid;
     cursor: pointer;
     transition: border-color var(--transition-base), box-shadow var(--transition-base);
   }
@@ -929,16 +926,14 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 
   .pf-row-head { display: none; }
 
-  /* Hide unnecessary columns */
-  .pf-c-rank { display: none; }
-  .pf-c-sec { display: none; }
-  .pf-c-num:nth-of-type(2) { display: none; }
-  .pf-c-num:nth-of-type(3) { display: none; }
+  /* Hide all by default */
+  .pf-row > * {
+    display: none !important;
+  }
 
-  /* Header: Ticker + Logo */
+  /* Show only needed elements */
   .pf-c-tk {
-    grid-column: 1 / -1;
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 10px;
     padding: 12px 14px;
@@ -963,27 +958,24 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
     letter-spacing: -0.02em;
   }
 
-  /* Stock Name */
   .pf-c-name {
-    grid-column: 1 / -1;
+    display: block !important;
     padding: 0 14px;
     padding-top: 2px;
+    padding-bottom: 8px;
     font-size: 13px;
     color: var(--ink-2);
     border-bottom: 1px solid var(--border);
-    display: block;
   }
 
-  /* Price (1st pf-c-num) */
   .pf-c-num:nth-of-type(1) {
-    padding: 10px 14px;
-    font-size: 13px;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     gap: 2px;
+    padding: 10px 14px;
+    font-size: 13px;
     min-height: 44px;
     justify-content: center;
-    border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
   }
 
@@ -996,37 +988,15 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
     font-weight: 600;
   }
 
-  /* DCF (4th pf-c-num) */
-  .pf-c-num:nth-of-type(4) {
-    padding: 10px 14px;
-    font-size: 13px;
-    display: flex;
+  .pf-c-w {
+    display: flex !important;
     flex-direction: column;
     gap: 2px;
+    padding: 10px 14px;
+    font-size: 13px;
     min-height: 44px;
     justify-content: center;
     border-bottom: 1px solid var(--border);
-  }
-
-  .pf-c-num:nth-of-type(4)::before {
-    content: 'DCF';
-    font-size: 11px;
-    color: var(--ink-4);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-weight: 600;
-  }
-
-  /* Weight */
-  .pf-c-w {
-    padding: 10px 14px;
-    font-size: 13px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-height: 44px;
-    justify-content: center;
-    border-right: 1px solid var(--border);
   }
 
   .pf-c-w::before {
@@ -1041,13 +1011,12 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
   .pf-w-bar-wrap { display: none; }
   .pf-w-num { font-weight: 700; }
 
-  /* Qty (5th pf-c-num) */
   .pf-c-num:nth-of-type(5) {
-    padding: 10px 14px;
-    font-size: 13px;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     gap: 2px;
+    padding: 10px 14px;
+    font-size: 13px;
     min-height: 44px;
     justify-content: center;
   }
