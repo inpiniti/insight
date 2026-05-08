@@ -343,14 +343,16 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
         <div className="pf-stacked-bar">
           {weighted.map((r, i) => {
             const safeWeight = typeof r.weight === "number" ? r.weight : 0;
+            const stockAllocationRatio = 1 - cashRatio / 100;
+            const adjustedWeight = safeWeight * stockAllocationRatio;
             return (
               <div
                 key={r.stock}
                 className="pf-stack-seg"
-                style={{ width: `${safeWeight}%`, background: palette[i % palette.length] }}
-                title={`${r.stock} ${safeWeight.toFixed(1)}%`}
+                style={{ width: `${adjustedWeight}%`, background: palette[i % palette.length] }}
+                title={`${r.stock} ${adjustedWeight.toFixed(1)}%`}
               >
-                {safeWeight > 6 && <span>{r.stock}</span>}
+                {adjustedWeight > 6 && <span>{r.stock}</span>}
               </div>
             );
           })}
@@ -368,11 +370,13 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
         <div className="pf-legend">
           {weighted.map((r, i) => {
             const safeWeight = typeof r.weight === "number" ? r.weight : 0;
+            const stockAllocationRatio = 1 - cashRatio / 100;
+            const adjustedWeight = safeWeight * stockAllocationRatio;
             return (
               <div key={r.stock} className="pf-legend-item">
                 <span className="pf-legend-dot" style={{ background: palette[i % palette.length] }}></span>
                 <span className="pf-legend-tick num">{r.stock}</span>
-                <span className="pf-legend-pct num">{safeWeight.toFixed(1)}%</span>
+                <span className="pf-legend-pct num">{adjustedWeight.toFixed(1)}%</span>
               </div>
             );
           })}
