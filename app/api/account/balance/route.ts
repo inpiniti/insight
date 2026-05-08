@@ -69,15 +69,21 @@ export async function GET(req: NextRequest) {
     const krwRow = output2.find((r: any) => r.crcy_cd === "KRW");
     const usdRow = output2.find((r: any) => r.crcy_cd === "USD");
 
+    // 예수금 = 총자산 - 평가금액
+    const totalAsset = parseFloat(output3.tot_asst_amt || "0");
+    const evaluationAmount = parseFloat(output3.evlu_amt_smtl || "0");
+    const depositAmount = totalAsset - evaluationAmount;
+
     return NextResponse.json({
       success: true,
       holdings,
       krw: {
         currency: "KRW",
-        totalAsset: parseFloat(output3.tot_asst_amt || "0"),
+        totalAsset: totalAsset,
         purchaseAmount: parseFloat(output3.pchs_amt_smtl || "0"),
-        evaluationAmount: parseFloat(output3.evlu_amt_smtl || "0"),
-        totalDeposit: parseFloat(output3.tot_dncl_amt || "0"),
+        evaluationAmount: evaluationAmount,
+        depositAmount: depositAmount,
+        totalDeposit: depositAmount,
         evaluationPnl: parseFloat(output3.evlu_pfls_amt_smtl || "0"),
         evaluationRate: parseFloat(output3.evlu_erng_rt1 || "0"),
         availableBalance: parseFloat(output3.wdrw_psbl_tot_amt || "0"),
@@ -85,8 +91,9 @@ export async function GET(req: NextRequest) {
       usd: usdRow || output3
         ? {
             currency: "USD",
-            totalAsset: parseFloat(output3.tot_asst_amt || "0") / 1380,
-            totalDeposit: parseFloat(usdRow?.frcr_dncl_amt_2 || "0"),
+            totalAsset: totalAsset / 1380,
+            depositAmount: depositAmount / 1380,
+            totalDeposit: depositAmount / 1380,
             availableBalance: parseFloat(usdRow?.frcr_drwg_psbl_amt_1 || "0"),
             purchaseAmount: parseFloat(usdRow?.frcr_buy_amt_smtl || "0"),
           }
