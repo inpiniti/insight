@@ -1210,20 +1210,22 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 
 /* ─────────── trade modal ─────────── */
 .trade-overlay {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex; align-items: flex-end; justify-content: center;
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
   z-index: 200;
+  padding: 24px;
 }
 .trade-modal {
-  background: var(--bg); border-radius: 24px 24px 0 0;
+  background: var(--bg); border-radius: 16px;
   width: 100%; max-width: 600px;
   max-height: 90vh; overflow-y: auto;
-  animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: tradeModalFadeIn 0.18s ease-out;
 }
-@keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+@keyframes tradeModalFadeIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 .trade-modal.trade-buy { --trade-color: var(--up); }
 .trade-modal.trade-sell { --trade-color: var(--down); }
