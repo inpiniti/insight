@@ -1106,15 +1106,19 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
   overflow: hidden;
   background: var(--bg-elev);
 }
-.holding-row {
+.holding-row, .holding-row-head {
   display: grid;
-  grid-template-columns: 60px 1fr 50px 70px 70px 70px 60px 100px;
-  gap: 0; align-items: center;
+  gap: 12px; align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
   font-size: 12px;
 }
+.holding-row {
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
 .holding-row:last-child { border-bottom: none; }
+.holding-row:hover { background: var(--bg-soft); }
 .holding-row-head {
   background: var(--bg-soft);
   font-weight: 600;
@@ -1122,22 +1126,27 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--ink-3);
-  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
 }
 .holding-ticker {
   font-weight: 600; color: var(--ink);
+  display: flex; align-items: center; gap: 10px;
+}
+.holding-logo {
+  width: 32px; height: 32px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  color: white; font-size: 11px; font-weight: 700;
 }
 .holding-cell {
   color: var(--ink-2);
   text-align: right;
   line-height: 1.4;
+  font-size: 13px;
 }
-.holding-cell:first-of-type { text-align: left; }
 .holding-pnl {
   font-weight: 600;
 }
-.holding-pnl.pos { color: var(--up); }
-.holding-pnl.neg { color: var(--down); }
 
 /* ─────────── holding grid ─────────── */
 .holding-grid {

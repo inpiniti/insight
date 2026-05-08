@@ -558,8 +558,8 @@ export default function AccountPage() {
                         <div className="pf-section-title" style={{ marginBottom: 12 }}>
                           {T.holdings} <span className="num" style={{ color: "var(--ink-4)" }}>{balanceData.holdings.length}</span>
                         </div>
-                        <div className="pf-table">
-                          <div className="pf-row pf-row-head" style={{ gridTemplateColumns: "1fr 70px 110px 110px 90px 130px" }}>
+                        <div className="holding-table">
+                          <div className="holding-row-head" style={{ gridTemplateColumns: "1fr 70px 110px 110px 90px 130px" }}>
                             <div>{T.h_ticker}</div>
                             <div style={{ textAlign: "right" }}>{T.h_qty}</div>
                             <div style={{ textAlign: "right" }}>{T.h_avg}</div>
@@ -577,7 +577,7 @@ export default function AccountPage() {
                             return (
                               <div
                                 key={h.pdno}
-                                className="pf-row pf-row-clickable"
+                                className="holding-row"
                                 style={{ gridTemplateColumns: "1fr 70px 110px 110px 90px 130px", cursor: "pointer" }}
                                 onClick={() => {
                                   tickerStore.open({
@@ -589,8 +589,8 @@ export default function AccountPage() {
                                   });
                                 }}
                               >
-                                <div className="pf-c-tk">
-                                  <span className="pf-logo" style={{ background: "var(--accent)" }}>
+                                <div className="holding-ticker">
+                                  <span className="holding-logo" style={{ background: "var(--accent)" }}>
                                     {h.pdno.slice(0, 2)}
                                   </span>
                                   <div>
@@ -600,16 +600,16 @@ export default function AccountPage() {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="num" style={{ textAlign: "right" }}>{qty.toFixed(0)}</div>
-                                <div className="num" style={{ textAlign: "right" }}>{fmtPrice(avgPrice)}</div>
-                                <div className="num" style={{ textAlign: "right" }}>{fmtPrice(currentPrice)}</div>
+                                <div className="holding-cell" style={{ textAlign: "right" }}>{qty.toFixed(0)}</div>
+                                <div className="holding-cell" style={{ textAlign: "right" }}>{fmtPrice(avgPrice)}</div>
+                                <div className="holding-cell" style={{ textAlign: "right" }}>{fmtPrice(currentPrice)}</div>
                                 <div
-                                  className="num"
-                                  style={{ textAlign: "right", color: chg >= 0 ? "var(--up)" : "var(--down)", fontWeight: 600 }}
+                                  className="holding-cell holding-pnl"
+                                  style={{ textAlign: "right", color: chg >= 0 ? "var(--up)" : "var(--down)" }}
                                 >
                                   {chg >= 0 ? "+" : ""}{chg.toFixed(2)}%
                                 </div>
-                                <div className="num" style={{ textAlign: "right", fontWeight: 600 }}>
+                                <div className="holding-cell" style={{ textAlign: "right", fontWeight: 600 }}>
                                   {currency === "USD"
                                     ? "$" + evalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                     : "₩" + Math.round(evalUsd * 1380).toLocaleString()
