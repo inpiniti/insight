@@ -1230,12 +1230,12 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 
 .trade-modal-head {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 24px 32px;
+  padding: 16px 24px;
   border-bottom: 1px solid var(--border);
 }
 .trade-mode-pill {
-  font-size: 14px; font-weight: 600;
-  padding: 8px 12px; border-radius: 20px;
+  font-size: 13px; font-weight: 600;
+  padding: 6px 10px; border-radius: 20px;
 }
 .trade-mode-pill.trade-buy-pill {
   background: var(--up-soft); color: var(--up);
@@ -1245,23 +1245,24 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 }
 
 .trade-modal-body {
-  padding: 28px 32px 80px;
+  padding: 18px 24px 60px;
+  display: flex; flex-direction: column; gap: 12px;
 }
 .trade-target {
-  display: flex; flex-direction: column; gap: 14px;
-  padding: 20px; background: var(--bg-soft);
-  border-radius: 12px; margin-bottom: 24px;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px; background: var(--bg-soft);
+  border-radius: 12px; margin-bottom: 0;
 }
 .trade-target > div {
   display: flex; align-items: flex-end; gap: 12px; justify-content: space-between;
 }
 .trade-field {
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 .trade-field-label {
-  font-size: 12px; color: var(--ink-3); font-weight: 600;
+  font-size: 11px; color: var(--ink-3); font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.06em;
-  display: block; margin-bottom: 10px;
+  display: block; margin-bottom: 6px;
 }
 .trade-field-value {
   font-size: 14px; color: var(--ink);
@@ -1270,19 +1271,19 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 .trade-field-value.num { font-weight: 700; }
 
 .trade-price-segs {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-  margin-bottom: 12px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  margin-bottom: 8px;
 }
 .trade-price-segs button {
-  padding: 12px 8px;
+  padding: 9px 6px;
   background: var(--bg-soft);
-  border: 2px solid var(--border);
-  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--ink-2);
-  display: flex; flex-direction: column; gap: 4px; align-items: center;
+  color: var(--ink-3);
+  display: flex; flex-direction: column; gap: 2px; align-items: center;
   transition: all 0.15s;
 }
 .trade-price-segs button:hover {
@@ -1299,12 +1300,13 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 }
 
 .trade-price-input-row {
-  display: flex; gap: 8px; align-items: center;
+  display: flex; gap: 0; align-items: center;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--bg-elev);
 }
 .trade-input {
   flex: 1;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
+  padding: 11px 12px;
+  border: none;
   border-radius: 10px;
   background: var(--bg-elev);
   color: var(--ink);
@@ -1323,15 +1325,15 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 }
 
 .trade-qty-row {
-  display: flex; gap: 8px; align-items: center;
+  display: flex; gap: 6px; align-items: center;
 }
 .qty-step {
-  width: 44px; height: 44px;
+  width: 38px; height: 38px;
   border: 1px solid var(--border);
   background: var(--bg-soft);
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
   color: var(--ink-2);
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
@@ -1343,14 +1345,14 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
   color: var(--accent);
 }
 .qty-max {
-  padding: 10px 16px;
+  padding: 8px 12px;
   background: var(--bg-soft);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  color: var(--ink-2);
+  color: var(--ink-3);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   transition: all 0.15s;
@@ -1364,38 +1366,38 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 
 .trade-total {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 16px 20px;
+  padding: 12px 16px;
   background: var(--bg-soft);
-  border-radius: 12px;
-  margin-bottom: 16px;
+  border-radius: 10px;
+  margin-bottom: 8px;
 }
 .trade-total-amt {
-  font-size: 20px; font-weight: 700;
+  font-size: 18px; font-weight: 700;
 }
 .trade-total-amt.buy { color: var(--up); }
 .trade-total-amt.sell { color: var(--down); }
 
 .trade-notice {
-  font-size: 12px;
-  color: var(--ink-3);
+  font-size: 11px;
+  color: var(--ink-4);
   text-align: center;
-  padding: 14px;
+  padding: 10px 12px;
   background: var(--bg-soft);
-  border-radius: 10px;
-  margin-bottom: 20px;
+  border-radius: 8px;
+  margin-bottom: 8px;
 }
 
 .trade-actions-row {
-  display: flex; gap: 10px;
+  display: flex; gap: 8px;
 }
 .trade-confirm {
   flex: 1;
-  padding: 14px 18px;
+  padding: 12px 16px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 13px;
   color: white;
   transition: all 0.15s;
 }
@@ -1413,12 +1415,12 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
 }
 
 .trade-success {
-  padding: 48px 32px;
+  padding: 32px 24px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 .trade-success-icon {
   width: 64px; height: 64px;
