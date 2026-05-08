@@ -11,9 +11,11 @@ interface PortfolioPageProps {
 
 export function PortfolioPage({ lang }: PortfolioPageProps) {
   const count = usePortfolioStore((state) => state.count);
+  const cashRatio = usePortfolioStore((state) => state.cashRatio);
   const sortKey = usePortfolioStore((state) => state.sortKey);
   const weightBasis = usePortfolioStore((state) => state.weightBasis);
   const setCount = usePortfolioStore((state) => state.setCount);
+  const setCashRatio = usePortfolioStore((state) => state.setCashRatio);
   const setSortKey = usePortfolioStore((state) => state.setSortKey);
   const setWeightBasis = usePortfolioStore((state) => state.setWeightBasis);
 
@@ -293,6 +295,23 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
 
         <div className="pf-control">
           <div className="pf-control-head">
+            <label className="pf-label">{lang === "ko" ? "현금비중" : "Cash Ratio"}</label>
+            <span className="pf-count-num num">{cashRatio}%</span>
+          </div>
+          <input
+            type="range" min="0" max="95" step="5"
+            value={cashRatio}
+            onChange={(e) => setCashRatio(parseInt(e.target.value))}
+            className="pf-slider"
+            style={{ accentColor: "var(--accent)" }}
+          />
+          <div className="pf-slider-ticks">
+            <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>95%</span>
+          </div>
+        </div>
+
+        <div className="pf-control">
+          <div className="pf-control-head">
             <label className="pf-label">{T.sortLabel}</label>
           </div>
           <div className="pf-seg">
@@ -335,6 +354,15 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
               </div>
             );
           })}
+          {cashRatio > 0 && (
+            <div
+              className="pf-stack-seg"
+              style={{ width: `${cashRatio}%`, background: "#94a3b8" }}
+              title={`Cash ${cashRatio}%`}
+            >
+              {cashRatio > 6 && <span>{lang === "ko" ? "현금" : "Cash"}</span>}
+            </div>
+          )}
         </div>
 
         <div className="pf-legend">
@@ -348,6 +376,13 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
               </div>
             );
           })}
+          {cashRatio > 0 && (
+            <div className="pf-legend-item">
+              <span className="pf-legend-dot" style={{ background: "#94a3b8" }}></span>
+              <span className="pf-legend-tick num">{lang === "ko" ? "현금" : "Cash"}</span>
+              <span className="pf-legend-pct num">{cashRatio}%</span>
+            </div>
+          )}
         </div>
       </section>
 
@@ -374,8 +409,9 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
             const safeClose = typeof r.close === "number" ? r.close : null;
 
             // Calculate suggested quantity
-            const suggestedQty = totalAssets > 0 && safeClose ?
-              (totalAssets * safeWeight / 100) / safeClose : 0;
+            const allocableAssets = totalAssets * (1 - cashRatio / 100);
+            const suggestedQty = allocableAssets > 0 && safeClose ?
+              (allocableAssets * safeWeight / 100) / safeClose : 0;
             return (
               <div
                 key={r.stock}
