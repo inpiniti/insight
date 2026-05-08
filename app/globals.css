@@ -809,6 +809,207 @@ button { font-family: inherit; cursor: pointer; border: 0; background: none; col
   .pf-row > .pf-c-name, .pf-row > .pf-c-num:nth-of-type(2) { display: none; }
 }
 
+/* ─────────── Mobile Portfolio List ─────────── */
+@media (max-width: 768px) {
+  .pf-table-wrap {
+    padding: 8px;
+    background: var(--bg);
+  }
+
+  .pf-table-toolbar {
+    padding: 0 8px;
+    margin-bottom: 12px;
+  }
+
+  .pf-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    margin-bottom: 12px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--transition-base) var(--ease-smooth);
+  }
+
+  .pf-row:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .pf-row:active {
+    background-color: var(--bg-soft);
+  }
+
+  .pf-row-head { display: none; }
+
+  /* ─── Reset all children ─── */
+  .pf-row > * {
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* ─── Header: Ticker + Logo ─── */
+  .pf-c-rank { display: none; }
+
+  .pf-c-tk {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--border);
+    order: 1;
+    min-height: 48px;
+  }
+
+  .pf-logo {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: "Inter";
+    letter-spacing: -0.02em;
+  }
+
+  /* ─── Stock Name (subtitle) ─── */
+  .pf-c-name {
+    order: 2;
+    padding: 0 14px;
+    padding-top: 2px;
+    font-size: 13px;
+    color: var(--ink-2);
+    display: block;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ─── Hide sector/exchange ─── */
+  .pf-c-sec { display: none; }
+
+  /* ─── Metrics Row 1: Price | DCF ─── */
+  .pf-c-num:nth-of-type(1) {
+    order: 3;
+    padding: 10px 14px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    flex: 1;
+    min-height: 44px;
+  }
+
+  .pf-c-num:nth-of-type(1)::before {
+    content: 'Price';
+    font-size: 11px;
+    color: var(--ink-4);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  .pf-c-num:nth-of-type(2),
+  .pf-c-num:nth-of-type(3) { display: none; }
+
+  .pf-c-num:nth-of-type(4) {
+    order: 3;
+    padding: 10px 14px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    flex: 1;
+    min-height: 44px;
+    margin-left: -1px;
+  }
+
+  .pf-c-num:nth-of-type(4)::before {
+    content: 'DCF';
+    font-size: 11px;
+    color: var(--ink-4);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  /* ─── Metrics Row 2: Weight | Qty ─── */
+  .pf-c-w {
+    order: 4;
+    padding: 10px 14px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-right: 1px solid var(--border);
+    flex: 1;
+    min-height: 44px;
+    flex-direction: row;
+  }
+
+  .pf-c-w::before {
+    content: 'Weight';
+    font-size: 11px;
+    color: var(--ink-4);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+  }
+
+  .pf-w-bar-wrap { display: none; }
+
+  .pf-w-num {
+    font-weight: 700;
+    color: var(--ink-2);
+  }
+
+  .pf-c-num:nth-of-type(5) {
+    order: 4;
+    padding: 10px 14px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    min-height: 44px;
+    margin-left: -1px;
+  }
+
+  .pf-c-num:nth-of-type(5)::before {
+    content: 'Qty';
+    font-size: 11px;
+    color: var(--ink-4);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  .pf-empty {
+    padding: 40px 16px;
+    margin: 0;
+    text-align: center;
+    color: var(--ink-3);
+    background: var(--bg-elev);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+  }
+}
+
 /* ─────────── footer ─────────── */
 .footer {
   border-top: 1px solid var(--border);
