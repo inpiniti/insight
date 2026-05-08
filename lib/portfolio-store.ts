@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface PortfolioState {
   count: number;
@@ -19,11 +20,18 @@ const INITIAL_STATE = {
   weightBasis: "sum_ratio" as const,
 };
 
-export const usePortfolioStore = create<PortfolioState>((set) => ({
-  ...INITIAL_STATE,
-  setCount: (count) => set({ count }),
-  setCashRatio: (cashRatio) => set({ cashRatio }),
-  setSortKey: (sortKey) => set({ sortKey }),
-  setWeightBasis: (weightBasis) => set({ weightBasis }),
-  reset: () => set(INITIAL_STATE),
-}));
+export const usePortfolioStore = create<PortfolioState>()(
+  persist(
+    (set) => ({
+      ...INITIAL_STATE,
+      setCount: (count) => set({ count }),
+      setCashRatio: (cashRatio) => set({ cashRatio }),
+      setSortKey: (sortKey) => set({ sortKey }),
+      setWeightBasis: (weightBasis) => set({ weightBasis }),
+      reset: () => set(INITIAL_STATE),
+    }),
+    {
+      name: "portfolio-store",
+    }
+  )
+);
