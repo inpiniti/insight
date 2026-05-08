@@ -45,11 +45,36 @@ export async function POST(req: NextRequest) {
       price, // 주문 단가
     } = body;
 
-    if (!accountNo || !appkey || !appsecret || !token || !symbol || !exchange || !orderType || !quantity || !price) {
+    if (
+      !accountNo ||
+      !appkey ||
+      !appsecret ||
+      !token ||
+      !symbol ||
+      !exchange ||
+      !orderType ||
+      quantity === undefined ||
+      quantity === null ||
+      quantity <= 0 ||
+      price === undefined ||
+      price === null ||
+      price <= 0
+    ) {
       return NextResponse.json(
         {
-          error: "필수 파라미터 누락",
-          required: ["accountNo", "accountCode", "appkey", "appsecret", "token", "symbol", "exchange", "orderType", "quantity", "price"],
+          error: "필수 파라미터 누락 또는 값이 유효하지 않음",
+          required: {
+            accountNo: !!accountNo ? "✓" : "❌",
+            accountCode: "✓",
+            appkey: !!appkey ? "✓" : "❌",
+            appsecret: !!appsecret ? "✓" : "❌",
+            token: !!token ? "✓" : "❌",
+            symbol: !!symbol ? "✓" : "❌",
+            exchange: !!exchange ? "✓" : "❌",
+            orderType: !!orderType ? "✓" : "❌",
+            quantity: quantity && quantity > 0 ? `✓ (${quantity})` : `❌ (${quantity})`,
+            price: price && price > 0 ? `✓ (${price})` : `❌ (${price})`,
+          },
         },
         { status: 400 }
       );

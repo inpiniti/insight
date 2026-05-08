@@ -162,6 +162,12 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
         return;
       }
 
+      if (price <= 0 || qty <= 0) {
+        alert(lang === "ko" ? "가격과 수량을 올바르게 입력해주세요" : "Please check price and quantity");
+        setOrdering(false);
+        return;
+      }
+
       const account = selectedAccount;
 
       // 주문 API 호출

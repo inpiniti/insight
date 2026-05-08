@@ -31,7 +31,6 @@ export async function GET(req: NextRequest) {
     }
 
     const params = new URLSearchParams({
-      AUTH: "",
       EXCD: exchange,
       SYMB: symbol,
     });
@@ -53,13 +52,23 @@ export async function GET(req: NextRequest) {
     const data = await response.json();
 
     if (data.rt_cd !== "0") {
+      console.error("[KIS Price Detail Error]", data);
       return NextResponse.json(
-        { error: "KIS API 오류", msg: data.msg1 || "조회 실패" },
+        { error: "KIS API 오류", msg: data.msg1 || "조회 실패", rt_cd: data.rt_cd },
         { status: 400 }
       );
     }
 
     const output = data.output || {};
+
+    // output이 비어있으면 에러 반환
+    if (!output || Object.keys(output).length === 0) {
+      console.warn("[KIS Price Detail Warning] Empty output from KIS", { symbol, exchange });
+      return NextResponse.json(
+        { error: "KIS에서 데이터를 반환하지 않음. 거래 가능 시간 확인 또는 종목코드 확인 필요", data },
+        { status: 400 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
