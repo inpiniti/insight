@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAccountStore } from "@/lib/account-store";
 
 interface TickerInfo {
   ticker: string;
@@ -32,6 +33,8 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
   const [priceDetail, setPriceDetail] = useState<any>(null);
   const [exchange, setExchange] = useState(info.exchange || "NASD");
 
+  const selectedAccount = useAccountStore((s) => s.getSelected());
+
   // 모달 열릴 때 현재가 상세 정보 조회
   useEffect(() => {
     const fetchPriceDetail = async () => {
@@ -39,28 +42,24 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
         setLoading(true);
         const ex = info.exchange || "NASD";
 
-        // localStorage에서 계좌 정보 조회
-        const accountId = localStorage.getItem("bunseok_active_account_v1");
-        if (!accountId) {
+        if (!selectedAccount) {
           console.error("계좌가 선택되지 않았습니다");
           setLoading(false);
           return;
         }
 
-        const accountStr = localStorage.getItem("bunseok_accounts_v1");
-        const accountData = accountStr ? JSON.parse(accountStr) : {};
-        const account = accountData[accountId];
-        if (!account?.token || !account?.appkey) {
+        if (!selectedAccount.token || !selectedAccount.appkey) {
           console.error("토큰 또는 appkey가 없습니다");
+          setLoading(false);
           return;
         }
 
         const params = new URLSearchParams({
           symbol: info.ticker,
           exchange: ex,
-          appkey: account.appkey,
-          appsecret: account.appsecret,
-          token: account.token,
+          appkey: selectedAccount.appkey,
+          appsecret: selectedAccount.appsecret,
+          token: selectedAccount.token,
         });
 
         const response = await fetch(`/api/account/price-detail?${params.toString()}`);
@@ -82,7 +81,7 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
     };
 
     fetchPriceDetail();
-  }, [info.ticker, info.exchange]);
+  }, [info.ticker, info.exchange, selectedAccount]);
 
   const refOpen = priceDetail?.prices?.open || +(info.price * 0.992).toFixed(2);
   const refHigh = priceDetail?.prices?.high || +(info.price * 1.013).toFixed(2);
@@ -149,21 +148,19 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
     try {
       setOrdering(true);
 
-      // localStorage에서 계좌 정보 조회
-      const accountId = localStorage.getItem("bunseok_active_account_v1");
-      if (!accountId) {
+      if (!selectedAccount) {
         alert(lang === "ko" ? "계좌가 선택되지 않았습니다" : "No account selected");
         setOrdering(false);
         return;
       }
 
-      const accountData = JSON.parse(localStorage.getItem("bunseok_accounts_v1") || "{}");
-      const account = accountData[accountId];
-
-      if (!account?.accountNo || !account?.token || !account?.appkey) {
+      if (!selectedAccount.accountNo || !selectedAccount.token || !selectedAccount.appkey) {
         alert(lang === "ko" ? "계좌 정보가 없습니다" : "Account info is missing");
+        setOrdering(false);
         return;
       }
+
+      const account = selectedAccount;
 
       // 주문 API 호출
       const response = await fetch("/api/account/order", {
