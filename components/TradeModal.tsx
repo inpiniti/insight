@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface TickerInfo {
   ticker: string;
   name: string;
   price: number;
   changePct: number;
+  exchange?: string;
 }
 
 interface TradeModalProps {
@@ -26,10 +27,64 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
   const [price, setPrice] = useState(info.price);
   const [qty, setQty] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [ordering, setOrdering] = useState(false);
+  const [priceDetail, setPriceDetail] = useState<any>(null);
+  const [exchange, setExchange] = useState(info.exchange || "NASD");
 
-  const refOpen = +(info.price * 0.992).toFixed(2);
-  const refHigh = +(info.price * 1.013).toFixed(2);
-  const refLow = +(info.price * 0.978).toFixed(2);
+  // 모달 열릴 때 현재가 상세 정보 조회
+  useEffect(() => {
+    const fetchPriceDetail = async () => {
+      try {
+        setLoading(true);
+        const ex = info.exchange || "NASD";
+
+        // localStorage에서 계좌 정보 조회
+        const accountId = localStorage.getItem("bunseok_active_account_v1");
+        if (!accountId) {
+          console.error("계좌가 선택되지 않았습니다");
+          return;
+        }
+
+        const accountData = JSON.parse(localStorage.getItem("bunseok_accounts_v1") || "{}");
+        const account = accountData[accountId];
+        if (!account?.token || !account?.appkey) {
+          console.error("토큰 또는 appkey가 없습니다");
+          return;
+        }
+
+        const params = new URLSearchParams({
+          symbol: info.ticker,
+          exchange: ex,
+          appkey: account.appkey,
+          appsecret: account.appsecret,
+          token: account.token,
+        });
+
+        const response = await fetch(`/api/account/price-detail?${params.toString()}`);
+        if (response.ok) {
+          const data = await response.json();
+          setPriceDetail(data);
+          if (data.prices) {
+            setPrice(data.prices.current);
+            setExchange(ex);
+          }
+        } else {
+          console.error("Price detail 조회 실패");
+        }
+      } catch (err) {
+        console.error("Price detail 조회 중 오류:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPriceDetail();
+  }, [info.ticker, info.exchange]);
+
+  const refOpen = priceDetail?.prices?.open || +(info.price * 0.992).toFixed(2);
+  const refHigh = priceDetail?.prices?.high || +(info.price * 1.013).toFixed(2);
+  const refLow = priceDetail?.prices?.low || +(info.price * 0.978).toFixed(2);
 
   const T = lang === "ko" ? {
     buyTitle: "매수 주문",
@@ -88,9 +143,55 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
   const total = price * qty;
   const maxQty = null; // holding?.qty would go here
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    setTimeout(() => onSubmit(), 1400);
+  const handleSubmit = async () => {
+    try {
+      setOrdering(true);
+
+      // localStorage에서 계좌 정보 조회
+      const accountId = localStorage.getItem("bunseok_active_account_v1");
+      const accountData = JSON.parse(localStorage.getItem("bunseok_accounts_v1") || "{}");
+      const account = accountData[accountId];
+
+      if (!account?.accountNo || !account?.token || !account?.appkey) {
+        alert(lang === "ko" ? "계좌 정보가 없습니다" : "Account info is missing");
+        return;
+      }
+
+      // 주문 API 호출
+      const response = await fetch("/api/account/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accountNo: account.accountNo,
+          accountCode: account.accountCode || "01",
+          appkey: account.appkey,
+          appsecret: account.appsecret,
+          token: account.token,
+          symbol: info.ticker,
+          exchange: exchange,
+          orderType: mode,
+          quantity: qty,
+          price: price,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSubmitted(true);
+        setTimeout(() => {
+          onSubmit();
+          setOrdering(false);
+        }, 1400);
+      } else {
+        alert(data.error || (lang === "ko" ? "주문 실패" : "Order failed"));
+        setOrdering(false);
+      }
+    } catch (err) {
+      console.error("Order error:", err);
+      alert(lang === "ko" ? "주문 중 오류 발생" : "Order error");
+      setOrdering(false);
+    }
   };
 
   return (
@@ -275,11 +376,11 @@ export default function TradeModal({ mode, info, lang, onClose, onSubmit }: Trad
             <div className="trade-notice">{T.notice}</div>
 
             <div className="trade-actions-row">
-              <button className="chip" onClick={onClose}>
+              <button className="chip" onClick={onClose} disabled={ordering}>
                 {T.cancel}
               </button>
-              <button className={`trade-confirm ${mode}`} onClick={handleSubmit}>
-                {mode === "buy" ? T.confirmBuy : T.confirmSell}
+              <button className={`trade-confirm ${mode}`} onClick={handleSubmit} disabled={loading || ordering}>
+                {ordering ? (lang === "ko" ? "주문 중..." : "Ordering...") : (mode === "buy" ? T.confirmBuy : T.confirmSell)}
               </button>
             </div>
           </div>

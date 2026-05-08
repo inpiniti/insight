@@ -14,6 +14,35 @@ function makeHeaders(appkey: string, appsecret: string, token: string) {
   };
 }
 
+async function fetchBalance(accountNo: string, accountCode: string, currencyDivision: string, appkey: string, appsecret: string, token: string) {
+  const params = new URLSearchParams({
+    CANO: accountNo,
+    ACNT_PRDT_CD: accountCode,
+    WCRC_FRCR_DVSN_CD: currencyDivision, // "01" = 원화, "02" = 외화
+    NATN_CD: "840", // 미국
+    TR_MKET_CD: "00",
+    INQR_DVSN_CD: "00",
+  });
+
+  const url = `${KIS_BASE_URL}${BALANCE_PATH}?${params}`;
+  const response = await fetch(url, {
+    method: "GET",
+    headers: makeHeaders(appkey, appsecret, token),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`KIS Balance API 실패 (${currencyDivision}): ${response.status} ${text}`);
+  }
+
+  const data = await response.json();
+  if (data.rt_cd !== "0") {
+    throw new Error(`KIS API 오류 (${currencyDivision}): ${data.msg1 || "조회 실패"}`);
+  }
+
+  return data;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const sp = req.nextUrl.searchParams;
@@ -30,75 +59,54 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const params = new URLSearchParams({
-      CANO: accountNo,
-      ACNT_PRDT_CD: accountCode,
-      WCRC_FRCR_DVSN_CD: "01",
-      NATN_CD: "000",
-      TR_MKET_CD: "00",
-      INQR_DVSN_CD: "00",
-    });
+    // 원화 조회
+    const krwData = await fetchBalance(accountNo, accountCode, "01", appkey, appsecret, token);
+    const krwOutput2: any[] = krwData.output2 ?? [];
+    const krwOutput3 = krwData.output3 ?? {};
+    const krwRow = krwOutput2.find((r: any) => r.crcy_cd === "KRW");
 
-    const url = `${KIS_BASE_URL}${BALANCE_PATH}?${params}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: makeHeaders(appkey, appsecret, token),
-    });
+    // 외화 조회
+    const frcData = await fetchBalance(accountNo, accountCode, "02", appkey, appsecret, token);
+    const frcOutput2: any[] = frcData.output2 ?? [];
+    const frcOutput3 = frcData.output3 ?? {};
+    const usdRow = frcOutput2.find((r: any) => r.crcy_cd === "USD");
 
-    if (!response.ok) {
-      const text = await response.text();
-      return NextResponse.json(
-        { error: "KIS 잔고 조회 실패", status: response.status, detail: text },
-        { status: response.status }
-      );
-    }
+    // 원화 잔고
+    const krwTotalAsset = parseFloat(krwOutput3.tot_asst_amt || "0");
+    const krwEvaluationAmount = parseFloat(krwOutput3.evlu_amt_smtl || "0");
+    const krwDepositAmount = krwTotalAsset - krwEvaluationAmount;
 
-    const data = await response.json();
-
-    if (data.rt_cd !== "0") {
-      return NextResponse.json(
-        { error: "KIS API 오류", msg: data.msg1 || "조회 실패" },
-        { status: 400 }
-      );
-    }
-
-    const holdings = data.output1 ?? [];
-    const output2: any[] = data.output2 ?? [];
-    const output3 = data.output3 ?? {};
-
-    const krwRow = output2.find((r: any) => r.crcy_cd === "KRW");
-    const usdRow = output2.find((r: any) => r.crcy_cd === "USD");
-
-    // 예수금 = 총자산 - 평가금액
-    const totalAsset = parseFloat(output3.tot_asst_amt || "0");
-    const evaluationAmount = parseFloat(output3.evlu_amt_smtl || "0");
-    const depositAmount = totalAsset - evaluationAmount;
+    // 외화 잔고
+    const usdTotalAsset = parseFloat(frcOutput3.tot_asst_amt || "0");
+    const usdEvaluationAmount = parseFloat(frcOutput3.evlu_amt_smtl || "0");
+    const usdDepositAmount = usdTotalAsset - usdEvaluationAmount;
 
     return NextResponse.json({
       success: true,
-      holdings,
+      holdings: krwData.output1 ?? [],
       krw: {
         currency: "KRW",
-        totalAsset: totalAsset,
-        purchaseAmount: parseFloat(output3.pchs_amt_smtl || "0"),
-        evaluationAmount: evaluationAmount,
-        depositAmount: depositAmount,
-        totalDeposit: depositAmount,
-        evaluationPnl: parseFloat(output3.evlu_pfls_amt_smtl || "0"),
-        evaluationRate: parseFloat(output3.evlu_erng_rt1 || "0"),
-        availableBalance: parseFloat(output3.wdrw_psbl_tot_amt || "0"),
+        totalAsset: krwTotalAsset,
+        purchaseAmount: parseFloat(krwOutput3.pchs_amt_smtl || "0"),
+        evaluationAmount: krwEvaluationAmount,
+        depositAmount: krwDepositAmount,
+        totalDeposit: krwRow?.frcr_dncl_amt_2 || krwDepositAmount,
+        evaluationPnl: parseFloat(krwOutput3.evlu_pfls_amt_smtl || "0"),
+        evaluationRate: parseFloat(krwOutput3.evlu_erng_rt1 || "0"),
+        availableBalance: parseFloat(krwRow?.frcr_drwg_psbl_amt_1 || krwOutput3.wdrw_psbl_tot_amt || "0"),
       },
-      usd: usdRow || output3
-        ? {
-            currency: "USD",
-            totalAsset: totalAsset / 1380,
-            depositAmount: depositAmount / 1380,
-            totalDeposit: depositAmount / 1380,
-            availableBalance: parseFloat(usdRow?.frcr_drwg_psbl_amt_1 || "0"),
-            purchaseAmount: parseFloat(usdRow?.frcr_buy_amt_smtl || "0"),
-          }
-        : null,
-      summary: output3,
+      usd: {
+        currency: "USD",
+        totalAsset: usdTotalAsset,
+        depositAmount: usdDepositAmount,
+        totalDeposit: usdRow?.frcr_dncl_amt_2 || usdDepositAmount,
+        availableBalance: parseFloat(usdRow?.frcr_drwg_psbl_amt_1 || "0"),
+        purchaseAmount: parseFloat(usdRow?.frcr_buy_amt_smtl || "0"),
+        evaluationAmount: usdEvaluationAmount,
+        evaluationPnl: parseFloat(frcOutput3.evlu_pfls_amt_smtl || "0"),
+      },
+      krwRaw: krwOutput3,
+      usdRaw: frcOutput3,
     });
   } catch (error) {
     console.error("[KIS Balance Error]", error);
