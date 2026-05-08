@@ -82,12 +82,13 @@ export async function GET(req: NextRequest) {
         evaluationRate: parseFloat(output3.evlu_erng_rt1 || "0"),
         availableBalance: parseFloat(output3.wdrw_psbl_tot_amt || "0"),
       },
-      usd: usdRow
+      usd: usdRow || output3
         ? {
             currency: "USD",
-            totalDeposit: parseFloat(usdRow.frcr_dncl_amt_2 || "0"),
-            availableBalance: parseFloat(usdRow.frcr_drwg_psbl_amt_1 || "0"),
-            purchaseAmount: parseFloat(usdRow.frcr_buy_amt_smtl || "0"),
+            totalAsset: parseFloat(output3.tot_asst_amt || "0") / 1380,
+            totalDeposit: parseFloat(usdRow?.frcr_dncl_amt_2 || "0"),
+            availableBalance: parseFloat(usdRow?.frcr_drwg_psbl_amt_1 || "0"),
+            purchaseAmount: parseFloat(usdRow?.frcr_buy_amt_smtl || "0"),
           }
         : null,
       summary: output3,

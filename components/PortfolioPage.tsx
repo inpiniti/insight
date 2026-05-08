@@ -40,9 +40,9 @@ export function PortfolioPage({ lang }: PortfolioPageProps) {
       if (cacheStr) {
         const cache = JSON.parse(cacheStr);
         const balance = cache.data;
-        if (balance && balance.usd && balance.usd.totalDeposit !== undefined) {
-          setTotalAssets(balance.usd.totalDeposit);
-          setTotalAssetsInput(balance.usd.totalDeposit.toString());
+        if (balance && balance.usd && balance.usd.totalAsset !== undefined) {
+          setTotalAssets(balance.usd.totalAsset);
+          setTotalAssetsInput(balance.usd.totalAsset.toString());
         }
       }
     } catch (e) {
